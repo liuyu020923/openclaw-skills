@@ -1,97 +1,57 @@
 # Error Codes and Troubleshooting
 
-Covers the error codes returned by the Amazon 利基数据 (niche data)
-endpoints under `/api/v1/amzscope/*`.
-
-## Error Code Reference
+## Pangolinfo API Error Codes
 
 | Code | Meaning | Resolution |
 |------|---------|------------|
 | 0 | Success | No action needed |
-| 1002 | Invalid Parameter | Check required fields for the specific API (see below) |
-| 1004 | Invalid or expired token | Re-authenticate. The script does this automatically. |
-| 2001 | Insufficient credits | Top up credits at pangolinfo.com |
-| 2005 | No active plan | Activate a subscription at pangolinfo.com |
-| 2007 | Account expired | Renew subscription at pangolinfo.com |
-| 2009 | Usage limit exceeded | Wait for quota reset or upgrade plan |
-| 3003 | User not logged in | Provide `Authorization: Bearer <token>` header |
-| 4002 | IP denied | Request is from an IP not on the allowlist |
-| 4029 | Too many requests | Back off and retry with exponential delay |
-| 5000 | System error | Retry; if persistent, contact support |
-| 5001 | System busy | Retry after a short delay |
-| 9100 | AmzScope service disabled | Service temporarily disabled; retry later |
-| 9101 | AmzScope data source unavailable | Upstream data source down; retry later |
-| 9102 | AmzScope quota exceeded | Provider-level quota hit; contact support |
-
-## Per-API required fields
-
-| API | Required fields | On violation |
-|-----|-----------------|--------------|
-| `POST /categories/children` | — | none |
-| `POST /categories/search` | `keyword` | `1002 keyword is required` |
-| `POST /categories/paths` | `categoryIds` (non-empty array) | `1002 categoryIds is required` |
-| `POST /categories/filter` | `timeRange`, `sampleScope` (also `marketplaceId` per docs) | `1002 timeRange and sampleScope are required` |
-| `POST /niches/filter` | `marketplaceId` | `1002` from upstream if missing |
-
-## Page size cap
-
-`POST /categories/filter` and `POST /niches/filter` enforce
-`pageSize <= 10`. Exceeding the cap returns:
-
-```
-1002 Invalid Parameter: pageSize must be less than 10
-```
+| 1002 | Invalid parameter | Check required fields for the specific API |
+| 1004 | Invalid token | Auto-retried by script |
+| 2001 | Insufficient credits | Top up at [pangolinfo.com](https://pangolinfo.com/?referrer=clawhub_niche) |
+| 2005 | No active plan | Subscribe at [pangolinfo.com](https://pangolinfo.com/?referrer=clawhub_niche) |
+| 2007 | Account expired | Renew at [pangolinfo.com](https://pangolinfo.com/?referrer=clawhub_niche) |
+| 2009 | Usage limit reached | Wait for next billing cycle or contact support |
+| 4029 | Rate limited | Reduce request frequency |
+| 9100 | Service disabled | AmzScope service temporarily disabled. Retry later. |
+| 9101 | Data source unavailable | Upstream niche data source is down. Retry later. |
+| 9102 | Quota exceeded | Provider-level quota hit. Contact support. |
 
 ## Authentication
 
-### Token Lifecycle
+- API keys are **permanent** (don't expire unless account deactivated)
+- Error code `1004` triggers automatic key refresh
+- Resolution order: `PANGOLINFO_API_KEY` env > `~/.pangolinfo_api_key` cache > fresh login
 
-- Tokens are **permanent** -- they do not expire on their own.
-- Error code `1004` indicates the token needs to be refreshed.
-- The script caches tokens at `~/.pangolin_token`.
+## Per-API Required Fields
 
-### Token Resolution Order
+| API | Required | On violation |
+|-----|----------|--------------|
+| `category-tree` | -- | -- |
+| `category-search` | `keyword` | `1002 keyword is required` |
+| `category-paths` | `categoryIds` (non-empty array) | `1002 categoryIds is required` |
+| `category-filter` | `timeRange`, `sampleScope` | `1002 timeRange and sampleScope are required` |
+| `niche-filter` | `marketplaceId` | `1002` from upstream |
 
-1. `PANGOLIN_TOKEN` environment variable
-2. Cached token at `~/.pangolin_token`
-3. Fresh login using `PANGOLIN_EMAIL` + `PANGOLIN_PASSWORD`
+**Page size cap:** `category-filter` and `niche-filter` enforce `size <= 10`. Exceeding returns `1002 pageSize must be less than 10`.
 
-### Auth Endpoint
+## Credit Costs
 
-```
-POST https://scrapeapi.pangolinfo.com/api/v1/auth
-Body: {"email": "<email>", "password": "<password>"}
-Response: {"code": 0, "message": "ok", "data": "<token>"}
-```
+| API | Credits |
+|-----|---------|
+| Category Tree | 2 |
+| Category Search | 2 |
+| Category Paths | 2 |
+| Category Filter | 5 |
+| Niche Filter | 10 |
 
-## Credit Management
-
-| API | Credits per request |
-|-----|---------------------|
-| Category Tree (`/categories/children`) | 2 |
-| Search Categories (`/categories/search`) | 2 |
-| Batch Category Paths (`/categories/paths`) | 2 |
-| Category Filter (`/categories/filter`) | 5 |
-| Niche Filter (`/niches/filter`) | 10 |
-
-- Empty-result responses are **not** charged.
-- Failed requests (non-zero code) are not charged.
-- Check your credit balance at [pangolinfo.com](https://www.pangolinfo.com).
+Credits consumed on success (code 0) only. Empty results are not charged.
 
 ## Common Issues
 
-**"No authentication credentials" error**
-Set environment variables: `export PANGOLIN_EMAIL=... PANGOLIN_PASSWORD=...`
-or `export PANGOLIN_TOKEN=...`.
+**"No authentication credentials" error** -- Set `PANGOLINFO_API_KEY` env var.
 
-**Empty `items` array**
-Filters may be too narrow. Try loosening `*Min`/`*Max` bounds, removing
-tier/level filters, or expanding `timeRange`.
+**Empty items array** -- Filters may be too narrow. Loosen `*Min`/`*Max` bounds or broaden `timeRange`.
 
-**Timeout or network errors**
-The script retries 3 times with exponential backoff for transient
-network errors. 4xx responses are not retried.
+**Timeout errors** -- Script retries 3x with exponential backoff. Check network.
 
-**`9101 Data source temporarily unavailable`**
-Upstream niche data provider is temporarily down. Retry later; this is
-unrelated to your account state.
+**`9101 Data source temporarily unavailable`** -- Upstream provider is down. Not related to your account.

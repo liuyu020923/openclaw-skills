@@ -1,102 +1,97 @@
 ---
 name: pangolinfo-amazon-niche
 description: >
-  Programmatic access to Pangolinfo Amazon 利基 (niche) data APIs:
-  browse the Amazon category tree, search categories, batch-resolve
-  category paths, and filter categories or niche markets by business
-  metrics (sales, search volume, returns, trends, etc.). Use when you
-  need structured niche/category intelligence (JSON) for pipelines or
-  agents. Requires PANGOLIN_TOKEN or PANGOLIN_EMAIL + PANGOLIN_PASSWORD.
-homepage: https://www.pangolinfo.com
+  Amazon niche & category intelligence (category tree, search, paths, filtering by business metrics).
 metadata:
   openclaw:
-    emoji: "📊"
-    os: ["darwin", "linux"]
     requires:
-      env: ["PANGOLIN_TOKEN"]
-      notes: "Auth: set PANGOLIN_TOKEN (recommended) OR set PANGOLIN_EMAIL + PANGOLIN_PASSWORD"
+      env:
+        - PANGOLINFO_API_KEY
+        - PANGOLINFO_EMAIL
+        - PANGOLINFO_PASSWORD
+      notes: "Auth: set PANGOLINFO_API_KEY (recommended) OR PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD."
 ---
 
 # Pangolinfo Amazon Niche Data
 
-Query Amazon category and niche intelligence via **Pangolinfo** APIs.
-Covers 5 endpoints under `/api/v1/amzscope/*`:
+Query Amazon category and niche intelligence via Pangolinfo's 利基数据 (niche data) APIs. Covers 5 endpoints under `/api/v1/amzscope/*` for category exploration, search, path resolution, and advanced filtering by business metrics.
 
-| # | API | Endpoint | Credits |
-|---|-----|----------|---------|
-| 1 | Category Tree (browseCategoryTreeAPI) | `POST /categories/children` | 2 |
-| 2 | Search Categories (searchCategoriesAPI) | `POST /categories/search` | 2 |
-| 3 | Batch Category Paths (batchCategoryPathsAPI) | `POST /categories/paths` | 2 |
-| 4 | Category Filter (categoryFilterAPI) | `POST /categories/filter` | 5 |
-| 5 | Niche Filter (nicheFilterAPI) | `POST /niches/filter` | 10 |
+## When to Use This Skill
 
-All endpoints live on `https://scrapeapi.pangolinfo.com` and share the
-same Bearer-token auth as the other Pangolinfo skills.
+| Intent (EN) | Intent (CN) | Action |
+|---|---|---|
+| Browse Amazon category tree | 浏览亚马逊类目树 | Category Tree |
+| Search for an Amazon category | 搜索亚马逊类目 | Category Search |
+| Get full path of category IDs | 批量查询类目路径 | Category Paths |
+| Filter categories by metrics | 按指标筛选类目 | Category Filter |
+| Find Amazon niches | 查找亚马逊利基市场 | Niche Filter |
+| Analyze category sales/trends | 分析类目销量/趋势 | Category Filter |
+| Find low-competition niches | 寻找低竞争利基 | Niche Filter |
+
+Do **not** use for Amazon product scraping, keyword search, or reviews -- those require the **pangolinfo-amazon-scraper** skill.
 
 ## Prerequisites
 
-- **Python 3.6+** (standard library only)
-- A **Pangolinfo account**: https://www.pangolinfo.com
-- Auth env vars (choose one):
-  - `PANGOLIN_TOKEN` (recommended)
-  - or `PANGOLIN_EMAIL` + `PANGOLIN_PASSWORD`
+- **Python 3.8+** (stdlib only, no pip install needed)
+- **Pangolinfo account** at [pangolinfo.com](https://pangolinfo.com/?referrer=clawhub_niche)
+- **Environment variables**: `PANGOLINFO_API_KEY` (recommended) OR `PANGOLINFO_EMAIL` + `PANGOLINFO_PASSWORD`
+
+macOS SSL error? Run: `/Applications/Python\ 3.x/Install\ Certificates.command`
+
+## Script Execution
 
 ```bash
-export PANGOLIN_TOKEN="..."
-# or
-export PANGOLIN_EMAIL="..."
-export PANGOLIN_PASSWORD="..."
+python3 scripts/pangolinfo.py --api category-search --keyword "headphones"
 ```
 
-## Minimal examples
+## Intent-to-Command Mapping
 
-Browse top-level category tree:
+### 1. Browse Category Tree (top-level)
 
 ```bash
 python3 scripts/pangolinfo.py --api category-tree
 ```
 
-Browse children of a specific node:
+### 2. Browse Children of a Specific Node
 
 ```bash
-python3 scripts/pangolinfo.py --api category-tree \
-  --parent-path "2619526011"
+python3 scripts/pangolinfo.py --api category-tree --parent-path "2619526011"
 ```
 
-Search categories by keyword (EN or CN):
+Nested nodes use `/`-joined paths: `--parent-path "2619526011/18116197011"`.
+
+### 3. Search Categories by Keyword
 
 ```bash
-python3 scripts/pangolinfo.py --api category-search \
-  --keyword "headphones"
+python3 scripts/pangolinfo.py --api category-search --keyword "headphones"
 ```
 
-Batch resolve category paths by IDs:
+Matches both English and Chinese category names.
+
+### 4. Batch Resolve Category Paths
 
 ```bash
-python3 scripts/pangolinfo.py --api category-paths \
-  --category-ids "2619526011,172282"
+python3 scripts/pangolinfo.py --api category-paths --category-ids "2619526011,172282"
 ```
 
-Filter categories by business metrics:
+Also accepts JSON array: `--category-ids '["2619526011","172282"]'`.
+
+### 5. Filter Categories by Business Metrics
 
 ```bash
 python3 scripts/pangolinfo.py --api category-filter \
-  --marketplace-id US \
-  --time-range l7d \
-  --sample-scope all_asin \
+  --marketplace-id US --time-range l7d --sample-scope all_asin
+```
+
+Single-category detail:
+
+```bash
+python3 scripts/pangolinfo.py --api category-filter \
+  --marketplace-id US --time-range l7d --sample-scope all_asin \
   --category-id 979832011
 ```
 
-Filter niches by business metrics:
-
-```bash
-python3 scripts/pangolinfo.py --api niche-filter \
-  --marketplace-id US \
-  --niche-title "yoga mat"
-```
-
-Pass arbitrary extra filters (any field from the API reference) via
-`--extra` (repeatable, `key=value`, values are JSON-parsed):
+With advanced filters via `--extra`:
 
 ```bash
 python3 scripts/pangolinfo.py --api category-filter \
@@ -107,77 +102,211 @@ python3 scripts/pangolinfo.py --api category-filter \
   --extra 'sortOrder=desc'
 ```
 
-## Usage
+### 6. Filter Niches by Business Metrics
 
-```
---api API              one of: category-tree, category-search, category-paths,
-                       category-filter, niche-filter (required)
-
-# Pagination (all APIs support these; filter APIs cap size at 10)
---page N               1-based page number
---size N               items per page (max 10 for category-filter / niche-filter)
-
-# category-tree
---parent-path PATH     e.g. "2619526011" or "2619526011/18116197011"
-
-# category-search
---keyword WORD         required; matches EN and CN names
-
-# category-paths
---category-ids LIST    required; comma-separated or JSON array of IDs
-
-# category-filter
---marketplace-id CODE  required; e.g. US, UK, DE
---time-range RANGE     required; e.g. l7d, l30d, l90d
---sample-scope SCOPE   required; e.g. all_asin
---category-id ID       optional; return single-category detail
-
-# niche-filter
---marketplace-id CODE  required
---niche-id ID          optional; detailed report for one niche
---niche-title TEXT     optional; keyword match on niche title
-
-# Shared
---extra key=value      repeatable; any extra request field (JSON-parsed)
---auth-only            authenticate and show token info
---raw                  output raw API response instead of extracted data
+```bash
+python3 scripts/pangolinfo.py --api niche-filter --marketplace-id US
 ```
 
-## Output
+Search by title:
 
-The script prints structured JSON to stdout. For successful calls it
-returns:
+```bash
+python3 scripts/pangolinfo.py --api niche-filter \
+  --marketplace-id US --niche-title "yoga mat"
+```
+
+With advanced range filters:
+
+```bash
+python3 scripts/pangolinfo.py --api niche-filter \
+  --marketplace-id US \
+  --extra 'searchVolumeT90Min=1000' \
+  --extra 'sortField=searchVolumeT90' \
+  --extra 'sortOrder=desc'
+```
+
+## Smart Defaults
+
+1. **Pagination defaults** -- `page=1`, `size=10` if not specified
+2. **Filter APIs cap** -- `size` max 10 for `category-filter` and `niche-filter`
+3. **`--extra` is JSON-parsed** -- numbers become ints, arrays become arrays, strings stay strings
+4. **Marketplace default** -- no default; must be explicitly provided for filter APIs
+
+## All CLI Options
+
+| Flag | Description | Default |
+|---|---|---|
+| `--api` | API to call (see APIs below) | *required* |
+| `--page` | 1-based page number | `1` |
+| `--size` | Items per page (max 10 for filter APIs) | `10` |
+| `--parent-path` | category-tree: parent node path | -- |
+| `--keyword` | category-search: search term (EN or CN) | -- |
+| `--category-ids` | category-paths: comma-separated or JSON array | -- |
+| `--marketplace-id` | Marketplace code (e.g. US, UK, DE) | -- |
+| `--time-range` | Aggregation range (e.g. l7d, l30d, l90d) | -- |
+| `--sample-scope` | Sample scope (e.g. all_asin) | -- |
+| `--category-id` | category-filter: single-category detail | -- |
+| `--niche-id` | niche-filter: specific niche ID | -- |
+| `--niche-title` | niche-filter: keyword match on title | -- |
+| `--extra` | Extra field as `key=value` (repeatable, JSON-parsed) | -- |
+| `--auth-only` | Auth check only (no credits) | -- |
+| `--raw` | Output raw API response | -- |
+| `--timeout` | Timeout in seconds | `120` |
+| `--cache-key` | Persist API key to `~/.pangolinfo_api_key` | off |
+
+## APIs
+
+| API | `--api` value | Required fields | Endpoint | Credits |
+|---|---|---|---|---|
+| Category Tree | `category-tree` | -- | `/api/v1/amzscope/categories/children` | 2 |
+| Category Search | `category-search` | `--keyword` | `/api/v1/amzscope/categories/search` | 2 |
+| Category Paths | `category-paths` | `--category-ids` | `/api/v1/amzscope/categories/paths` | 2 |
+| Category Filter | `category-filter` | `--marketplace-id --time-range --sample-scope` | `/api/v1/amzscope/categories/filter` | 5 |
+| Niche Filter | `niche-filter` | `--marketplace-id` | `/api/v1/amzscope/niches/filter` | 10 |
+
+## Marketplace IDs
+
+| Code | Region | Code | Region |
+|---|---|---|---|
+| `US` | United States | `JP` | Japan |
+| `UK` | United Kingdom | `IT` | Italy |
+| `CA` | Canada | `ES` | Spain |
+| `DE` | Germany | `MX` | Mexico |
+| `FR` | France | `AU` | Australia |
+| `IN` | India | `BR` | Brazil |
+| `AE` | UAE | `SA` | Saudi Arabia |
+
+## Cost
+
+| API | Credits |
+|---|---|
+| Category Tree | 2 |
+| Category Search | 2 |
+| Category Paths | 2 |
+| Category Filter | 5 |
+| Niche Filter | 10 |
+
+Credits consumed on success only (API code 0). Empty results are not charged. Auth checks are free.
+
+## Output Format
+
+JSON to **stdout** on success, error JSON to **stderr** on failure.
+
+### Success
 
 ```json
 {
   "success": true,
-  "api": "category-search",
-  "items": [ ... ],          // the data array
-  "total": 42,               // when returned by upstream
+  "api": "searchCategoriesAPI",
+  "items": [
+    {
+      "browseNodeId": "9059094011",
+      "browseNodeName": "Headphones",
+      "browseNodeNameCn": "耳机",
+      "sellable": 1,
+      "hasChild": 0
+    }
+  ],
+  "total": 33,
   "page": 1,
   "size": 10,
-  "totalPages": 5
+  "totalPages": 4,
+  "results_count": 10
 }
 ```
 
-Errors surface as:
+### Error (stderr)
 
 ```json
 {
   "success": false,
-  "error_code": 1002,
-  "message": "Invalid Parameter: keyword is required"
+  "error": {
+    "code": "API_ERROR",
+    "api_code": 1002,
+    "message": "Invalid Parameter: keyword is required",
+    "hint": "Check required fields for this API. See references/error-codes.md."
+  }
 }
 ```
 
-Use `--raw` to inspect the full upstream envelope when debugging.
+## Response Presentation
 
-## Links
+Match the user's language. Never dump raw JSON.
 
-- Homepage: https://www.pangolinfo.com
-- Docs index: https://docs.pangolinfo.com/cn-index
+- **Category Tree**: hierarchical list with node name (EN/CN), sellable indicator
+- **Category Search**: numbered list with category path, sellable, hasChild
+- **Category Paths**: table of ID -> full path (EN/CN)
+- **Category Filter**: metric summary card with sales, views, trends, price tier
+- **Niche Filter**: niche overview with search volume, product count, brand count, growth
+- **Empty results**: suggest loosening filters, checking marketplace, broadening search
 
-## References
+## Exit Codes
 
-- [references/amazon-niche-api.md](references/amazon-niche-api.md)
-- [references/error-codes.md](references/error-codes.md)
+| Code | Meaning |
+|---|---|
+| 0 | Success |
+| 1 | API error |
+| 2 | Usage error (bad arguments) |
+| 3 | Network error |
+| 4 | Authentication error |
+
+## Error Reference
+
+### Script Error Codes
+
+| Code | Meaning | Resolution |
+|------|---------|------------|
+| `MISSING_ENV` | No credentials | Set env vars |
+| `AUTH_FAILED` | Wrong credentials | Verify email/password |
+| `RATE_LIMIT` | Too many requests | Wait and retry |
+| `NETWORK` | Connection issue | Check internet |
+| `SSL_CERT` | Certificate error | See macOS SSL fix |
+| `API_ERROR` | Pangolinfo API error | Check `api_code` and `hint` |
+| `PARSE_ERROR` | Invalid API response | Retry |
+| `USAGE_ERROR` | Bad arguments | Fix CLI args |
+
+### Pangolinfo API Error Codes
+
+| Code | Meaning | Resolution |
+|------|---------|------------|
+| 1002 | Invalid parameter | Check required fields for the API |
+| 1004 | Invalid token | Auto-retried by script |
+| 2001 | Insufficient credits | Top up at [pangolinfo.com](https://pangolinfo.com/?referrer=clawhub_niche) |
+| 2005 | No active plan | Subscribe at [pangolinfo.com](https://pangolinfo.com/?referrer=clawhub_niche) |
+| 2007 | Account expired | Renew at [pangolinfo.com](https://pangolinfo.com/?referrer=clawhub_niche) |
+| 2009 | Usage limit reached | Wait for next billing cycle |
+| 4029 | Rate limited | Reduce request frequency |
+| 9100 | Service disabled | Retry later |
+| 9101 | Data source unavailable | Retry later |
+| 9102 | Quota exceeded | Contact support |
+
+## First-Time Setup
+
+See [references/setup-guide.md](references/setup-guide.md) for interactive setup instructions.
+
+Quick start:
+```bash
+export PANGOLINFO_API_KEY="your-api-key"
+python3 scripts/pangolinfo.py --auth-only
+```
+
+## Important Notes for AI Agents
+
+1. **Never dump raw JSON.** Parse and present per the Response Presentation guidelines.
+2. **Match the user's language.**
+3. **Be proactive.** Highlight top categories, summarize trends, flag high-competition niches.
+4. **Credit awareness.** Niche Filter costs 10 credits -- warn before bulk queries.
+5. **Use `--extra` for advanced filters.** All metric range/tier/trend filters go via `--extra key=value`.
+6. **Default to `US` marketplace** unless context implies another region.
+7. **Combine results.** "Find a good niche to sell in" = niche-filter + category-filter for deeper analysis.
+8. **Security.** Never expose API keys or passwords.
+9. **Handle multi-step.** E.g., "What's trending in electronics?" = category-search → category-filter with trend filters.
+10. **Suggest next steps.** After showing niches, suggest drilling into specific categories.
+
+## Advanced Filter Reference
+
+See [references/amazon-niche-api.md](references/amazon-niche-api.md) for the full list of `--extra` filter fields (numeric ranges, tiers, trends, quantile buckets) for Category Filter and Niche Filter APIs.
+
+## Output Schema
+
+See [references/output-schema.md](references/output-schema.md) for per-API field documentation.
