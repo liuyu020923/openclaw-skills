@@ -1,43 +1,57 @@
 #!/usr/bin/env bash
 set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PANGOLIN="$SCRIPT_DIR/pangolin.py"
+PANGOLINFO="$SCRIPT_DIR/pangolinfo.py"
 
 # Cross-platform Python detection
-# On Windows, python3 may exist but exit non-zero; test with --version
-if python3 --version &>/dev/null 2>&1; then
+if python3 --version >/dev/null 2>&1; then
   PYTHON="python3"
 else
   PYTHON="python"
 fi
 
+PASS=0
+FAIL=0
+
+run_test() {
+  local name="$1"
+  shift
+  echo -n "  [$name] "
+  if "$@"; then
+    echo "PASS"
+    PASS=$((PASS + 1))
+  else
+    echo "FAIL (exit code $?)"
+    FAIL=$((FAIL + 1))
+  fi
+}
+
 echo "=== Pangolinfo AI SERP Self-Test ==="
 
-# Test 1: Auth check
-echo "[1/2] Testing authentication..."
-if $PYTHON "$PANGOLIN" --auth-only; then
-  echo "  PASS: Auth OK"
+# --- Auth tests (no credits consumed) ---
+echo "Auth tests:"
+run_test "auth-check" $PYTHON "$PANGOLINFO" --auth-only
+
+# --- Input validation tests (no credits consumed) ---
+echo "Input validation tests:"
+
+run_test "missing-query" bash -c "! $PYTHON \"$PANGOLINFO\" 2>/dev/null"
+run_test "follow-up-in-serp" bash -c "! $PYTHON \"$PANGOLINFO\" --q test --mode serp --follow-up q 2>/dev/null"
+run_test "region-in-ai-mode" bash -c "! $PYTHON \"$PANGOLINFO\" --q test --mode ai-mode --region us 2>/dev/null"
+run_test "invalid-region" bash -c "! $PYTHON \"$PANGOLINFO\" --q test --mode serp --region xx 2>/dev/null"
+run_test "invalid-num-zero" bash -c "! $PYTHON \"$PANGOLINFO\" --q test --num 0 2>/dev/null"
+
+# --- Live API tests (consumes credits) ---
+if [ "${RUN_LIVE_TESTS:-0}" = "1" ]; then
+  echo "Live API tests (credits will be consumed):"
+
+  run_test "serp-query" bash -c "$PYTHON \"$PANGOLINFO\" --q openclaw --mode serp 2>/dev/null | $PYTHON -c \"import sys,json; d=json.load(sys.stdin); assert d['success']==True; print(f'Got {d.get(\\\"results_num\\\",0)} results')\""
+
+  run_test "ai-mode-query" bash -c "$PYTHON \"$PANGOLINFO\" --q 'what is python' 2>/dev/null | $PYTHON -c \"import sys,json; d=json.load(sys.stdin); assert d['success']==True\""
 else
-  echo "  FAIL: Auth failed (exit code $?)"
-  exit 1
+  echo "Live API tests: SKIPPED (set RUN_LIVE_TESTS=1 to enable -- consumes credits)"
 fi
 
-# Test 2: Minimal SERP query
-echo "[2/2] Testing SERP query..."
-if $PYTHON "$PANGOLIN" --q "openclaw" --mode serp 2>/dev/null | $PYTHON -c "import sys,json; d=json.load(sys.stdin); assert d.get('success')==True; print(f'  PASS: Got {d.get(\"results_num\",0)} results')"; then
-  :
-else
-  echo "  FAIL: SERP query failed"
-  exit 2
-fi
-
-# Error path tests
-echo "[E1] Testing missing query error..."
-if $PYTHON "$PANGOLIN" 2>/dev/null; then
-  echo "  FAIL: Should have errored on missing --q"
-  exit 10
-else
-  echo "  PASS: Correctly rejected missing query"
-fi
-
-echo "=== All tests passed ==="
+echo ""
+echo "=== Results: $PASS passed, $FAIL failed ==="
+[ "$FAIL" -eq 0 ] || exit 1
