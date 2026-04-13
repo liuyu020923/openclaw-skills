@@ -16,6 +16,8 @@ https://scrapeapi.pangolinfo.com/api/v1/amzscope
 - `Content-Type: application/json`
 - `Authorization: Bearer <token>`
 
+> **Security note:** `<token>` in all curl examples below is a **placeholder**. Replace it with your own API key at runtime. Never paste real credentials into shared documents, issue trackers, or version-controlled files.
+
 ### Response envelope
 
 All APIs return the same outer envelope:
@@ -44,7 +46,7 @@ For paginated APIs the `items` object contains:
 }
 ```
 
-`category-filter` and `niche-filter` cap `size` at 10.
+`category-filter` and `niche-filter` cap both `size` and `page` at 10.
 
 ### Credits
 
@@ -231,7 +233,7 @@ POST /api/v1/amzscope/categories/filter
 | Field | Type | Description |
 |-------|------|-------------|
 | `categoryId` | string | Single-category detail (returns 1 record) |
-| `page` | int | Page number |
+| `page` | int | Page number (**max 10**) |
 | `size` | int | Records per page (**max 10**) |
 | `sortField` | string | Any response field name |
 | `sortOrder` | string | `asc` or `desc` |
@@ -356,7 +358,7 @@ POST /api/v1/amzscope/niches/filter
 |-------|------|-------------|
 | `nicheId` | string | Specific niche ID for detailed report |
 | `nicheTitle` | string | Keyword match on niche title |
-| `page` | int | Page number |
+| `page` | int | Page number (**max 10**) |
 | `size` | int | Records per page (**max 10**) |
 | `sortField` | string | Any response field name |
 | `sortOrder` | string | `asc` or `desc` |

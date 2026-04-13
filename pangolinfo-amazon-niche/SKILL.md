@@ -9,7 +9,7 @@ metadata:
         - PANGOLINFO_API_KEY
         - PANGOLINFO_EMAIL
         - PANGOLINFO_PASSWORD
-      notes: "Auth: set PANGOLINFO_API_KEY (recommended) OR PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD."
+      notes: "Auth: set PANGOLINFO_API_KEY (recommended) OR PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD. Credentials are NOT cached to disk by default; disk persistence only activates with explicit --cache-key flag or PANGOLINFO_CACHE=1."
 ---
 
 # Pangolinfo Amazon Niche Data
@@ -35,6 +35,8 @@ Do **not** use for Amazon product scraping, keyword search, or reviews -- those 
 - **Python 3.8+** (stdlib only, no pip install needed)
 - **Pangolinfo account** at [pangolinfo.com](https://pangolinfo.com/?referrer=clawhub_niche)
 - **Environment variables**: `PANGOLINFO_API_KEY` (recommended) OR `PANGOLINFO_EMAIL` + `PANGOLINFO_PASSWORD`
+
+> **Security:** Credentials are held **in-memory only** by default. The script will **not** write any key or password to disk unless you explicitly opt in via `--cache-key` (or `PANGOLINFO_CACHE=1`), which persists the API key to `~/.pangolinfo_api_key` (mode 600).
 
 macOS SSL error? Run: `/Applications/Python\ 3.x/Install\ Certificates.command`
 
@@ -128,7 +130,7 @@ python3 scripts/pangolinfo.py --api niche-filter \
 ## Smart Defaults
 
 1. **Pagination defaults** -- `page=1`, `size=10` if not specified
-2. **Filter APIs cap** -- `size` max 10 for `category-filter` and `niche-filter`
+2. **Filter APIs cap** -- `size` max 10 and `page` max 10 for `category-filter` and `niche-filter`
 3. **`--extra` is JSON-parsed** -- numbers become ints, arrays become arrays, strings stay strings
 4. **Marketplace default** -- no default; must be explicitly provided for filter APIs
 
@@ -137,7 +139,7 @@ python3 scripts/pangolinfo.py --api niche-filter \
 | Flag | Description | Default |
 |---|---|---|
 | `--api` | API to call (see APIs below) | *required* |
-| `--page` | 1-based page number | `1` |
+| `--page` | 1-based page number (max 10 for filter APIs) | `1` |
 | `--size` | Items per page (max 10 for filter APIs) | `10` |
 | `--parent-path` | category-tree: parent node path | -- |
 | `--keyword` | category-search: search term (EN or CN) | -- |
@@ -279,6 +281,10 @@ Match the user's language. Never dump raw JSON.
 | 9100 | Service disabled | Retry later |
 | 9101 | Data source unavailable | Retry later |
 | 9102 | Quota exceeded | Contact support |
+
+## Self-Test
+
+Run `bash scripts/self_test.sh` to validate all 5 APIs. **This consumes up to ~21 credits** (Tree 2 + Search 2 + Paths 2 + CategoryFilter 5 + NicheFilter 10). Auth check is free. Only run when you need to verify connectivity.
 
 ## First-Time Setup
 

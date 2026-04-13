@@ -291,8 +291,15 @@ def _apply_extras(body, extras):
     return body
 
 
-def _apply_pagination(body, page, size):
+def _apply_pagination(body, page, size, is_filter=False):
     if page is not None:
+        if is_filter and page > 10:
+            _emit_error(
+                "USAGE_ERROR",
+                "Filter APIs limit page to 10 (got %d)." % page,
+                hint="Use --page 1..10. Refine filters to narrow results.",
+                exit_code=EXIT_USAGE_ERROR,
+            )
         body["page"] = page
     if size is not None:
         body["size"] = size
@@ -347,7 +354,7 @@ def build_body(args):
         body["sampleScope"] = args.sample_scope
         if args.category_id:
             body["categoryId"] = args.category_id
-        _apply_pagination(body, args.page, args.size)
+        _apply_pagination(body, args.page, args.size, is_filter=True)
 
     elif args.api == "niche-filter":
         if not args.marketplace_id:
@@ -361,7 +368,7 @@ def build_body(args):
             body["nicheId"] = args.niche_id
         if args.niche_title:
             body["nicheTitle"] = args.niche_title
-        _apply_pagination(body, args.page, args.size)
+        _apply_pagination(body, args.page, args.size, is_filter=True)
 
     _apply_extras(body, args.extra)
     return body
@@ -522,7 +529,7 @@ def main():
     )
 
     # Pagination
-    parser.add_argument("--page", type=int, help="1-based page number")
+    parser.add_argument("--page", type=int, help="1-based page number (max 10 for filter APIs)")
     parser.add_argument("--size", type=int, help="Items per page (max 10 for filter APIs)")
 
     # category-tree

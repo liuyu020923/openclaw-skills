@@ -5,6 +5,10 @@
 # Usage: bash scripts/self_test.sh
 #
 # Runs all 5 APIs with minimal parameters and validates JSON output.
+#
+# ⚠ CREDIT COST: A full run consumes up to ~21 credits
+#   (Tree 2 + Search 2 + Paths 2 + CategoryFilter 5 + NicheFilter 10).
+#   Auth check is free. Only successful calls are charged.
 
 set -euo pipefail
 
@@ -39,6 +43,7 @@ run_test() {
 }
 
 echo "=== Pangolinfo Amazon Niche Data - Self Test ==="
+echo "  NOTE: This test will consume up to ~21 API credits (auth check is free)."
 echo ""
 
 # Auth check (free)
