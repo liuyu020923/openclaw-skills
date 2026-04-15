@@ -7,9 +7,7 @@ metadata:
     requires:
       env:
         - PANGOLINFO_API_KEY
-        - PANGOLINFO_EMAIL
-        - PANGOLINFO_PASSWORD
-      notes: "Auth: set PANGOLINFO_API_KEY (recommended) OR PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD. Credentials are NOT cached to disk by default; disk persistence only activates with explicit --cache-key flag or PANGOLINFO_CACHE=1."
+      notes: "Set PANGOLINFO_API_KEY (recommended). Alternative: set PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD instead (optional, for email/password login). Credentials are NOT cached to disk by default; disk persistence only activates with explicit --cache-key flag or PANGOLINFO_CACHE=1."
 ---
 
 # Pangolinfo Amazon Niche Data
