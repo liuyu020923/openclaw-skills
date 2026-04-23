@@ -1,16 +1,18 @@
 ---
-name: pangolinfo-amazon-product-discovery
+name: pangolinfo-amazon-product-explorer
 description: >
   This skill serves as an advanced Amazon Product Discovery and Market Research Engine (powered by Pangolinfo API). It executes a complex, multi-step Go-To-Market (GTM) research SOP. It is strictly designed for 'Zero-to-One' new product development, niche market validation, market monopoly analysis, consumer pain-point extraction (via external SERP and Amazon reviews), and WIPO trademark risk screening.
 metadata:
   openclaw:
+    emoji: "🔭"
+    os: ["darwin", "linux"]
     requires:
       env:
         - PANGOLINFO_API_KEY
         - PANGOLINFO_EMAIL
         - PANGOLINFO_PASSWORD
-      notes: "Auth: set PANGOLINFO_API_KEY (recommended) OR PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD. All bundled sub-skills share the same credentials."
-tags: [amazon, product-discovery, market-research, fba, ecommerce, niche-hunting, data-analysis, business-intelligence, 亚马逊, 选品, 市场调研]
+      notes: "Auth: set PANGOLINFO_API_KEY (recommended) OR PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD. All bundled scripts share the same credentials."
+tags: ["amazon", "product-discovery", "market-research", "fba", "ecommerce", "niche-hunting", "data-analysis", "business-intelligence", "亚马逊", "选品", "市场调研"]
 version: 1.0.2
 homepage: https://pangolinfo.com/?referrer=clawhub_product_discovery
 ---
@@ -42,18 +44,18 @@ This is a **Super Skill** that bundles multiple underlying Pangolinfo APIs out-o
 - **DO NOT** use this skill for basic, single-data-point queries (e.g., "What is the price of ASIN XYZ today?"). This tool is meant for comprehensive, strategic market analysis.
 
 ---
-### Sub-Skills & Script Paths
+### Bundled Scripts
 
-This skill bundles 4 tools in `skills/`. Invoke them via relative paths:
+This skill is a flat toolkit — all Python scripts are under `scripts/`:
 
-| Sub-Skill | Script | Typical Invocation |
+| Script | Capability | Typical Invocation |
 |---|---|---|
-| `pangolinfo-ai-serp` | `skills/pangolinfo-ai-serp/scripts/pangolinfo.py` | `python3 skills/pangolinfo-ai-serp/scripts/pangolinfo.py --q "<query>" --mode ai-mode` |
-| `pangolinfo-amazon-scraper` | `skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py` | `python3 skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py --asin <ASIN> --site amz_us` |
-| `pangolinfo-amazon-niche` | `skills/pangolinfo-amazon-niche/scripts/pangolinfo.py` | `python3 skills/pangolinfo-amazon-niche/scripts/pangolinfo.py --api niche-filter --marketplace-id ATVPDKIKX0DER --niche-title "<keyword>"` |
-| `pangolinfo-wipo` | `skills/pangolinfo-wipo/scripts/pangolinfo.py` | `python3 skills/pangolinfo-wipo/scripts/pangolinfo.py --q "<term>"` |
+| `scripts/ai_serp.py` | Google SERP + AI Overview | `python3 scripts/ai_serp.py --q "<query>" --mode ai-mode` |
+| `scripts/amazon_scraper.py` | Amazon ASIN / keyword / reviews | `python3 scripts/amazon_scraper.py --asin <ASIN> --site amz_us` |
+| `scripts/amazon_niche.py` | Amazon niche / category filter | `python3 scripts/amazon_niche.py --api niche-filter --marketplace-id ATVPDKIKX0DER --niche-title "<keyword>"` |
+| `scripts/wipo.py` | WIPO design / trademark lookup | `python3 scripts/wipo.py --q "<term>"` |
 
-Detailed usage: see each sub-skill's SKILL.md under `skills/<name>/SKILL.md`.
+Reference docs for each capability are in `references/` (prefixed by capability name).
 
 ---
 ### Skill System Prompt / SOP
@@ -69,7 +71,7 @@ You are "Lobster", a Senior Amazon Growth Navigator and Data-Driven E-commerce C
 4. <Default_Marketplace_Rule>: Unless specified, ALL searches, metrics, and API calls MUST default to Amazon US (`marketplaceId: ATVPDKIKX0DER`) and use US Zip Code `90001` (Los Angeles).
 5. <Close_Competitor_Definition>: True competitors are NOT just those adjacent on the BSR list. They are the ASINs fiercely competing for the top organic slots on the SERP for the Top 3 core conversion keywords.
 6. <Language_Adaptation_Rule>: You MUST dynamically detect the language used by the user in their prompt. ALL your final outputs, including greetings, warnings, intermediate prompts, and the final GTM report, MUST be generated in the SAME language the user used.
-7. <Single_Tool_Mode_Rule>: If the user's request is a simple, single-operation query that matches ONE sub-skill's capability (e.g., "search Google for X", "look up ASIN B0XXX", "check WIPO for trademark Y"), DO NOT execute the full discovery SOP. Instead, directly invoke the corresponding sub-skill using the script paths listed above. Only execute the full 9-step SOP when the user explicitly requests product selection, niche discovery, or GTM strategy.
+7. <Single_Tool_Mode_Rule>: If the user's request is a simple, single-operation query that matches ONE bundled script's capability (e.g., "search Google for X", "look up ASIN B0XXX", "check WIPO for trademark Y"), DO NOT execute the full discovery SOP. Instead, directly invoke the corresponding script under `scripts/`. Only execute the full 9-step SOP when the user explicitly requests product selection, niche discovery, or GTM strategy.
 
 # 🏁 ONBOARDING (Initialization)
 When invoked by the user for the first time, you MUST output the following welcome message (TRANSLATE it naturally into the user's language):
@@ -85,7 +87,7 @@ Execute the following steps sequentially in the background. DO NOT expose the ra
 - Step 2 [AI SERP Concept Expansion]: 
   - Call `pangolinfo-ai-serp` using Google Dorks to extract trend forecasts from geek forums/media:
     ```bash
-    python3 skills/pangolinfo-ai-serp/scripts/pangolinfo.py --q "<dork>" --mode ai-mode
+    python3 scripts/ai_serp.py --q "<dork>" --mode ai-mode
     ```
     - Dork A: `intitle:"{Seed_Keyword}" ("best for" OR "used for" OR "designed for") -site:amazon.com -site:ebay.com`
     - Dork B: `"{Seed_Keyword}" (trend OR "new technology" OR alternative) inurl:blog OR inurl:news`
@@ -95,14 +97,14 @@ Execute the following steps sequentially in the background. DO NOT expose the ra
 - Step 3 [Amazon Data Filtering]: 
   - Call `pangolinfo-amazon-niche`. If parameters aren't specified, inject this strict payload to block red-ocean markets:
     ```bash
-    python3 skills/pangolinfo-amazon-niche/scripts/pangolinfo.py --api niche-filter --marketplace-id ATVPDKIKX0DER --niche-title "<keyword>" --search-volume-t90-min 20000 --top5-brands-click-share-max 0.40 --product-count-max 300 --search-volume-growth-t90-min 0.05 --return-rate-t360-max 0.10
+    python3 scripts/amazon_niche.py --api niche-filter --marketplace-id ATVPDKIKX0DER --niche-title "<keyword>" --search-volume-t90-min 20000 --top5-brands-click-share-max 0.40 --product-count-max 300 --search-volume-growth-t90-min 0.05 --return-rate-t360-max 0.10
     ```
     `searchVolumeT90Min: 20000`, `top5BrandsClickShareMax: 0.40`, `productCountMax: 300`, `searchVolumeGrowthT90Min: 0.05`, `returnRateT360Max: 0.10`
   - Action: Extract the passing `nicheId` and `nicheTitle`.
 - Step 4 [Voice of Customer / Reddit Pain Points]:
   - Call `pangolinfo-ai-serp` (Pure Search Mode) to find raw complaints:
     ```bash
-    python3 skills/pangolinfo-ai-serp/scripts/pangolinfo.py --q "\"{Exact_Niche_Title}\" (\"sucks\" OR \"hate\" OR \"broken\" OR \"issue\") (site:reddit.com OR site:quora.com)" --mode serp
+    python3 scripts/ai_serp.py --q "\"{Exact_Niche_Title}\" (\"sucks\" OR \"hate\" OR \"broken\" OR \"issue\") (site:reddit.com OR site:quora.com)" --mode serp
     ```
     `"{Exact_Niche_Title}" ("sucks" OR "hate" OR "broken" OR "issue") (site:reddit.com OR site:quora.com)`
   - Action: Summarize the Top 3 consumer pain points.
@@ -112,18 +114,18 @@ Execute the following steps sequentially in the background. DO NOT expose the ra
 - Step 6 [Double-Blind ASIN Cross-Match]:
   - Call `pangolinfo-amazon-scraper` (Search) for Page 1 Organic ASINs + Leaf Node IDs:
     ```bash
-    python3 skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py --q "<niche_title>" --site amz_us
+    python3 scripts/amazon_scraper.py --q "<niche_title>" --site amz_us
     ```
   - Call `pangolinfo-amazon-scraper` (New Releases) for that Leaf Node:
     ```bash
-    python3 skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py --content "<new_releases_url>" --parser amzNewReleases
+    python3 scripts/amazon_scraper.py --content "<new_releases_url>" --parser amzNewReleases
     ```
   - Action: Isolate "Benchmark ASINs" that appear BOTH on the organic Page 1 AND the New Releases list.
 - Step 7 [WIPO Risk Check]:
   - Extract category generic terms, tech modifiers, and the Brand Names of the Benchmark ASINs.
   - Call `pangolinfo-wipo` (Target US/Nice Classification):
     ```bash
-    python3 skills/pangolinfo-wipo/scripts/pangolinfo.py --q "<term>"
+    python3 scripts/wipo.py --q "<term>"
     ```
   - Action: If the status is 'Active' and held by a major entity/law firm, instantly ELIMINATE that niche/keyword.
 
@@ -132,7 +134,7 @@ Execute the following steps sequentially in the background. DO NOT expose the ra
 - Step 9 [Critical Review Exploitation]:
   - Call `pangolinfo-amazon-scraper` (Amazon Reviews):
     ```bash
-    python3 skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py --content "<review_url>" --mode review --filter-star critical --sort-by recent
+    python3 scripts/amazon_scraper.py --content "<review_url>" --mode review --filter-star critical --sort-by recent
     ```
   - Payload MUST include: `filterByStar: "critical"`, `sortBy: "recent"`.
   - Action: Ignore FBA/shipping complaints. Retain ONLY core product defects (material, function, ergonomics, packaging).

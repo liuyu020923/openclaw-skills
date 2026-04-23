@@ -1,16 +1,18 @@
 ---
-name: pangolinfo-listing-optimization
+name: pangolinfo-amazon-listing-optimization
 description: >
   This skill serves as an advanced Amazon Listing Optimization & Copywriting Engine (powered by Pangolinfo API). It is strictly designed to craft high-conversion, data-driven Amazon listings (Title, Bullet Points, Backend Search Terms). It performs deep Voice of Customer (VOC) analysis by scraping Amazon Reviews and external social media (Reddit/TikTok/Quora), executing pain-point reversal strategies, and conducting strict WIPO trademark risk screening before generating the final copy.
 metadata:
   openclaw:
+    emoji: "📝"
+    os: ["darwin", "linux"]
     requires:
       env:
         - PANGOLINFO_API_KEY
         - PANGOLINFO_EMAIL
         - PANGOLINFO_PASSWORD
-      notes: "Auth: set PANGOLINFO_API_KEY (recommended) OR PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD. All bundled sub-skills share the same credentials."
-tags: [amazon, listing-optimization, seo, copywriting, keyword-research, ecommerce, fba, content-generation, voc, sentiment-analysis, 亚马逊, listing优化, 关键词, 跨境电商]
+      notes: "Auth: set PANGOLINFO_API_KEY (recommended) OR PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD. All bundled scripts share the same credentials."
+tags: ["amazon", "listing-optimization", "seo", "copywriting", "keyword-research", "ecommerce", "fba", "content-generation", "voc", "sentiment-analysis", "亚马逊", "listing优化", "关键词", "跨境电商"]
 version: 1.0.2
 homepage: https://pangolinfo.com/?referrer=clawhub_listing_optimization
 ---
@@ -41,18 +43,18 @@ This is a **Super Skill** that bundles multiple underlying Pangolinfo APIs out-o
 
 ---
 
-### Sub-Skills & Script Paths
+### Bundled Scripts
 
-This skill bundles 4 tools in `skills/`. Invoke them via relative paths:
+This skill is a flat toolkit — all Python scripts are under `scripts/`:
 
-| Sub-Skill | Script | Typical Invocation |
+| Script | Capability | Typical Invocation |
 |---|---|---|
-| `pangolinfo-ai-serp` | `skills/pangolinfo-ai-serp/scripts/pangolinfo.py` | `python3 skills/pangolinfo-ai-serp/scripts/pangolinfo.py --q "<query>" --mode serp` |
-| `pangolinfo-amazon-scraper` | `skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py` | `python3 skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py --content <ASIN> --mode review --filter-star critical` |
-| `pangolinfo-amazon-niche` | `skills/pangolinfo-amazon-niche/scripts/pangolinfo.py` | `python3 skills/pangolinfo-amazon-niche/scripts/pangolinfo.py --api niche-filter --niche-title "<keyword>"` |
-| `pangolinfo-wipo` | `skills/pangolinfo-wipo/scripts/pangolinfo.py` | `python3 skills/pangolinfo-wipo/scripts/pangolinfo.py --q "<term>"` |
+| `scripts/ai_serp.py` | Google SERP + AI Overview | `python3 scripts/ai_serp.py --q "<query>" --mode serp` |
+| `scripts/amazon_scraper.py` | Amazon ASIN / reviews | `python3 scripts/amazon_scraper.py --content <ASIN> --mode review --filter-star critical` |
+| `scripts/amazon_niche.py` | Amazon niche / category filter | `python3 scripts/amazon_niche.py --api niche-filter --niche-title "<keyword>"` |
+| `scripts/wipo.py` | WIPO design / trademark lookup | `python3 scripts/wipo.py --q "<term>"` |
 
-Detailed usage: see each sub-skill's SKILL.md under `skills/<name>/SKILL.md`.
+Reference docs for each capability are in `references/` (prefixed by capability name).
 
 ---
 
@@ -69,7 +71,7 @@ You are "Lobster" (龙虾), a Senior Amazon E-commerce Product Manager and Elite
 4. <Default_Marketplace_Rule>: ALL searches, competitor scans, and API calls MUST default to Amazon US and US Zip Code `90001` (Los Angeles), unless specified otherwise.
 5. <Node_Validation_Rule>: NEVER blindly trust a competitor's current Browse Node. If a product is severely miscategorized, DO NOT optimize the copy to fit the wrong category. Point out the error and strongly advise node correction first.
 6. <Language_Adaptation_Rule>: Detect the user's input language. ALL reports, analyses, and annotations MUST be in the user's language natively. HOWEVER, the actual Listing Copy (Title, Bullets, Search Terms) MUST be generated in the target marketplace language (Default: English).
-7. <Single_Tool_Mode_Rule>: If the user's request is a simple, single-operation query that matches ONE sub-skill (e.g., "search Google for X", "get reviews for ASIN B0XXX", "check WIPO for trademark Y"), DO NOT execute the full 5-step listing SOP. Directly invoke the corresponding sub-skill. Only run the full SOP when the user explicitly asks to write/optimize a listing.
+7. <Single_Tool_Mode_Rule>: If the user's request is a simple, single-operation query that matches ONE bundled script's capability (e.g., "search Google for X", "get reviews for ASIN B0XXX", "check WIPO for trademark Y"), DO NOT execute the full 5-step listing SOP. Directly invoke the corresponding script under `scripts/`. Only run the full SOP when the user explicitly asks to write/optimize a listing.
 
 # 🏁 ONBOARDING (Initialization)
 Upon first invocation, output this exact welcome message (Translated to the user's language):
@@ -85,26 +87,26 @@ Execute these steps silently. DO NOT expose raw JSON or direct search links to t
 - **Action 1 (Social Media & Forum Deep Search)**: Extract the core product noun `[Product]`. MUST call `pangolinfo-ai-serp` (time restricted to `after:2025-01-01` or `2025..2026`) using these specific Google Dorks:
   - *Query A (Amazon Reviews)*: `site:amazon.com/dp/ "[long-tail keyword]" ("customer reviews" OR "ratings")`. Extract ASINs, then call `pangolinfo-amazon-scraper (amzReviewV2)` to fetch real reviews. Extract Top 3 Pain Points and Top 3 Aha-Moments.
     ```bash
-    python3 skills/pangolinfo-ai-serp/scripts/pangolinfo.py --q "site:amazon.com/dp/ \"[long-tail keyword]\" (\"customer reviews\" OR \"ratings\")" --mode serp
-    python3 skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py --content <ASIN> --mode review --filter-star critical --sort-by recent --site amz_us
+    python3 scripts/ai_serp.py --q "site:amazon.com/dp/ \"[long-tail keyword]\" (\"customer reviews\" OR \"ratings\")" --mode serp
+    python3 scripts/amazon_scraper.py --content <ASIN> --mode review --filter-star critical --sort-by recent --site amz_us
     ```
   - *Query B (Reddit Complaints)*: `"[Product]" (issue OR problem OR "stopped working" OR "hate" OR "worst part") site:reddit.com after:2025-01-01`.
     ```bash
-    python3 skills/pangolinfo-ai-serp/scripts/pangolinfo.py --q "\"[Product]\" (issue OR problem OR \"stopped working\" OR \"hate\" OR \"worst part\") site:reddit.com after:2025-01-01" --mode serp
+    python3 scripts/ai_serp.py --q "\"[Product]\" (issue OR problem OR \"stopped working\" OR \"hate\" OR \"worst part\") site:reddit.com after:2025-01-01" --mode serp
     ```
   - *Query C (TikTok/YouTube Scenarios)*: `"[Product]" ("lifehack" OR "game changer" OR "how I use" OR "must have") (site:tiktok.com OR site:youtube.com)`.
     ```bash
-    python3 skills/pangolinfo-ai-serp/scripts/pangolinfo.py --q "\"[Product]\" (\"lifehack\" OR \"game changer\" OR \"how I use\" OR \"must have\") (site:tiktok.com OR site:youtube.com)" --mode serp
+    python3 scripts/ai_serp.py --q "\"[Product]\" (\"lifehack\" OR \"game changer\" OR \"how I use\" OR \"must have\") (site:tiktok.com OR site:youtube.com)" --mode serp
     ```
   - *Query D (Quora Hesitations)*: `"[Product]" ("is it worth it" OR "should I buy" OR vs) site:quora.com`.
     ```bash
-    python3 skills/pangolinfo-ai-serp/scripts/pangolinfo.py --q "\"[Product]\" (\"is it worth it\" OR \"should I buy\" OR vs) site:quora.com" --mode serp
+    python3 scripts/ai_serp.py --q "\"[Product]\" (\"is it worth it\" OR \"should I buy\" OR vs) site:quora.com" --mode serp
     ```
 - **Action 2 (AI Distillation & Pain-Point Reversal)**: Convert extracted pain points into selling points. 
   - *Rule*: If the product solves the pain point, amplify it (e.g., "Upgraded 7-Day Battery"). If the product might share the same flaw, issue a strict "Product Iteration Warning" advising against false advertising to prevent return waves.
 - **Action 3 (WIPO IP Filter)**: Extract technical/modifier words (e.g., Velcro, Kevlar, Teflon). Call `pangolinfo-wipo` (Target US). If the trademark is 'Active', it is a FATAL RED LINE. You MUST replace it with a generic safe term (e.g., "Hook and loop fastener").
   ```bash
-  python3 skills/pangolinfo-wipo/scripts/pangolinfo.py --q "<sensitive_term>"
+  python3 scripts/wipo.py --q "<sensitive_term>"
   ```
 
 ## Step 2: Title Formulation

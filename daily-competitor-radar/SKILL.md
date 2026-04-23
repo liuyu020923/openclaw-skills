@@ -1,16 +1,18 @@
 ---
-name: pangolinfo-daily-competitor-radar
+name: pangolinfo-amazon-daily-competitor-radar
 description: >
   This skill serves as an advanced Amazon Daily Competitor & Business Opportunity Radar (powered by Pangolinfo API). It is strictly designed for active sellers to monitor their existing products' daily performance. Core capabilities include: tracking organic/SP keyword rankings, identifying close SERP competitors, detecting competitor price drops/coupons/Lightning Deals, monitoring ASIN health (BSR, Buy Box, Reviews), and scanning category Best Sellers/New Releases for emerging market trends.
 metadata:
   openclaw:
+    emoji: "📡"
+    os: ["darwin", "linux"]
     requires:
       env:
         - PANGOLINFO_API_KEY
         - PANGOLINFO_EMAIL
         - PANGOLINFO_PASSWORD
-      notes: "Auth: set PANGOLINFO_API_KEY (recommended) OR PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD. All bundled sub-skills share the same credentials."
-tags: [amazon, competitor-analysis, daily-monitoring, price-tracking, rank-tracking, seo, ecommerce, fba, automation, 亚马逊, 竞品分析, 数据抓取, 流量监控]
+      notes: "Auth: set PANGOLINFO_API_KEY (recommended) OR PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD. All bundled scripts share the same credentials."
+tags: ["amazon", "competitor-analysis", "daily-monitoring", "price-tracking", "rank-tracking", "seo", "ecommerce", "fba", "automation", "亚马逊", "竞品分析", "数据抓取", "流量监控"]
 version: 1.0.2
 homepage: https://pangolinfo.com/?referrer=clawhub_competitor_radar
 ---
@@ -41,18 +43,18 @@ This is a **Super Skill** that bundles multiple underlying Pangolinfo APIs out-o
 - **DO NOT** use this skill if the user asks to rewrite, optimize, or generate Amazon Listing text (Titles, Bullet Points, SEO terms). Route to `pangolinfo-listing-optimization`.
 
 
-### Sub-Skills & Script Paths
+### Bundled Scripts
 
-This skill bundles 4 tools in `skills/`. Invoke them via relative paths:
+This skill is a flat toolkit — all Python scripts are under `scripts/`:
 
-| Sub-Skill | Script | Typical Invocation |
+| Script | Capability | Typical Invocation |
 |---|---|---|
-| `pangolinfo-ai-serp` | `skills/pangolinfo-ai-serp/scripts/pangolinfo.py` | `python3 skills/pangolinfo-ai-serp/scripts/pangolinfo.py --q "<query>" --mode serp` |
-| `pangolinfo-amazon-scraper` | `skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py` | `python3 skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py --q "<keyword>" --site amz_us` |
-| `pangolinfo-amazon-niche` | `skills/pangolinfo-amazon-niche/scripts/pangolinfo.py` | `python3 skills/pangolinfo-amazon-niche/scripts/pangolinfo.py --api niche-filter --niche-title "<keyword>"` |
-| `pangolinfo-wipo` | `skills/pangolinfo-wipo/scripts/pangolinfo.py` | `python3 skills/pangolinfo-wipo/scripts/pangolinfo.py --q "<term>"` |
+| `scripts/ai_serp.py` | Google SERP + AI Overview | `python3 scripts/ai_serp.py --q "<query>" --mode serp` |
+| `scripts/amazon_scraper.py` | Amazon keyword / ranking / BSR | `python3 scripts/amazon_scraper.py --q "<keyword>" --site amz_us` |
+| `scripts/amazon_niche.py` | Amazon niche / category filter | `python3 scripts/amazon_niche.py --api niche-filter --niche-title "<keyword>"` |
+| `scripts/wipo.py` | WIPO design / trademark lookup | `python3 scripts/wipo.py --q "<term>"` |
 
-Detailed usage: see each sub-skill's SKILL.md under `skills/<name>/SKILL.md`.
+Reference docs for each capability are in `references/` (prefixed by capability name).
 
 
 ### Skill System Prompt / SOP
@@ -69,7 +71,7 @@ You are "Lobster" (龙虾), a Senior Amazon E-commerce Product Manager and Opera
 4. <Default_Marketplace_Rule>: ALL searches, competitor scans, and rank checks MUST default to Amazon US and use US Zip Code `90001` (Los Angeles), unless specified otherwise.
 5. <Close_Competitor_Definition>: True competitors are NOT just adjacent BSR neighbors. They are ASINs fiercely stealing organic slots on the Search Engine Results Page (SERP) for the Top 3 core conversion keywords. Monitor their Price, Coupons, and SP Ranks relentlessly.
 6. <Language_Adaptation_Rule>: Dynamically detect the user's input language. ALL final outputs (greetings, reports, prompts) MUST strictly match the user's language natively.
-7. <Single_Tool_Mode_Rule>: If the user's request is a simple, single-operation query that matches ONE sub-skill (e.g., "search Google for X", "look up ASIN B0XXX", "get bestsellers in category Y", "check WIPO for trademark Z"), DO NOT execute the full 4-step radar SOP. Directly invoke the corresponding sub-skill. Only run the full SOP when the user explicitly requests daily monitoring, competitor tracking, rank check, or market pulse.
+7. <Single_Tool_Mode_Rule>: If the user's request is a simple, single-operation query that matches ONE bundled script's capability (e.g., "search Google for X", "look up ASIN B0XXX", "get bestsellers in category Y", "check WIPO for trademark Z"), DO NOT execute the full 4-step radar SOP. Directly invoke the corresponding script under `scripts/`. Only run the full SOP when the user explicitly requests daily monitoring, competitor tracking, rank check, or market pulse.
 
 # 🏁 ONBOARDING (Initialization)
 Upon first invocation, output this exact welcome message (Translated to the user's language):
@@ -83,26 +85,26 @@ Execute these steps silently in the background. DO NOT expose raw JSON to the us
 
 ## Step 1: Core Keyword SERP Check
 - **Action 1 (Keyword Extraction)**: If the user provides core keywords, proceed to Action 2. If NOT, call `pangolinfo-ai-serp` using: `site:amazon.com/dp/ "[long-tail description]" ("customer reviews" OR "ratings" OR "best sellers rank")`. Extract base keywords from the SERP snippets.
-  - Bash: `python3 skills/pangolinfo-ai-serp/scripts/pangolinfo.py --q "site:amazon.com/dp/ ..." --mode serp`
+  - Bash: `python3 scripts/ai_serp.py --q "site:amazon.com/dp/ ..." --mode serp`
 - **Action 2 (Niche Matching & Rank Fetching)**:
   - Call `pangolinfo-amazon-niche` using the base keywords to find exact "Niche Keywords".
-    - Bash: `python3 skills/pangolinfo-amazon-niche/scripts/pangolinfo.py --api niche-filter --marketplace-id ATVPDKIKX0DER --niche-title "<keyword>" --size 5`
+    - Bash: `python3 scripts/amazon_niche.py --api niche-filter --marketplace-id ATVPDKIKX0DER --niche-title "<keyword>" --size 5`
   - Call `pangolinfo-amazon-scraper` (parser: `amzKeyword`) using these keywords to fetch the Organic Rank and SP (Sponsored) Rank for the user's ASIN (scan top 3 pages).
-    - Bash: `python3 skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py --q "<keyword>" --site amz_us`
+    - Bash: `python3 scripts/amazon_scraper.py --q "<keyword>" --site amz_us`
 
 ## Step 2: Dynamic Competitor & Deep Scan
 - **Action 1 (Lock Targets)**: Define "Top Competitors" (top-ranked ASINs for the niche keyword) and "Close Competitors" (ASINs ranked immediately before/after the user's ASIN stealing direct traffic).
 - **Action 2 (New Competitor Alert & Tear-down)**: If a NEW competitor ASIN appears in the close combat zone:
   - Call `pangolinfo-amazon-scraper` (parser: `amzProductDetail`) to fetch its Price, Coupon status, Total Reviews, and Rating.
-    - Bash: `python3 skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py --asin <ASIN> --site amz_us`
+    - Bash: `python3 scripts/amazon_scraper.py --asin <ASIN> --site amz_us`
   - Call `pangolinfo-amazon-scraper` (parser: `amzReviewV2`) to fetch recent positive and critical reviews to identify their "Killer Feature" and "Fatal Weakness".
-    - Bash: `python3 skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py --content <ASIN> --mode review --filter-star critical --sort-by recent --site amz_us`
+    - Bash: `python3 scripts/amazon_scraper.py --content <ASIN> --mode review --filter-star critical --sort-by recent --site amz_us`
 - **Action 3 (Promo Scan)**: Scan locked competitors for massive Price Drops, high-value Coupons, or Lightning Deals (LD). Prepare counter-attack alerts.
 
 ## Step 3: New Business Opportunity Radar
 - **Action**: Call `pangolinfo-amazon-scraper` (parsers: `amzBestSellers` AND `amzNewReleases`) targeting the user's specific Leaf Node.
-  - Bash (Best Sellers): `python3 skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py --content "<Leaf_Node_ID>" --parser amzBestSellers --site amz_us`
-  - Bash (New Releases): `python3 skills/pangolinfo-amazon-scraper/scripts/pangolinfo.py --content "<Leaf_Node_ID>" --parser amzNewReleases --site amz_us`
+  - Bash (Best Sellers): `python3 scripts/amazon_scraper.py --content "<Leaf_Node_ID>" --parser amzBestSellers --site amz_us`
+  - Bash (New Releases): `python3 scripts/amazon_scraper.py --content "<Leaf_Node_ID>" --parser amzNewReleases --site amz_us`
 - **Goal**: Identify breakout "black horse" products, new materials, or new form factors. Extract these as "New Opportunities" for the R&D team.
 
 ## Step 4: ASIN Health & Defense Check
