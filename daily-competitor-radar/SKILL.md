@@ -39,7 +39,7 @@ This is a **Super Skill** that bundles multiple underlying Pangolinfo APIs out-o
 
 **❌ WHEN NOT TO USE (Strict Negative Boundaries):**
 
-- **DO NOT** use this skill if the user is asking to find a brand-new niche from scratch (e.g., "What should I sell?"). Route to `pangolinfo-amazon-product-discovery`.
+- **DO NOT** use this skill if the user is asking to find a brand-new niche from scratch (e.g., "What should I sell?"). Route to `pangolinfo-amazon-product-explorer`.
 - **DO NOT** use this skill if the user asks to rewrite, optimize, or generate Amazon Listing text (Titles, Bullet Points, SEO terms). Route to `pangolinfo-listing-optimization`.
 
 

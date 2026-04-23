@@ -38,7 +38,7 @@ This is a **Super Skill** that bundles multiple underlying Pangolinfo APIs out-o
 
 **❌ WHEN NOT TO USE (Strict Negative Boundaries):**
 
-- **DO NOT** use this skill if the user is asking to find a brand-new niche from scratch (Route to `pangolinfo-amazon-product-discovery`).
+- **DO NOT** use this skill if the user is asking to find a brand-new niche from scratch (Route to `pangolinfo-amazon-product-explorer`).
 - **DO NOT** use this skill if the user asks to monitor daily competitor price drops, daily ranking changes, or BSR fluctuations (Route to `pangolinfo-daily-competitor-radar`).
 
 ---
