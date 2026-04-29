@@ -13,7 +13,7 @@ metadata:
         - PANGOLINFO_PASSWORD
       notes: "Auth: set PANGOLINFO_API_KEY (recommended) OR PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD. All bundled scripts share the same credentials."
 tags: ["amazon", "product-explorer", "market-research", "fba", "ecommerce", "niche-hunting", "data-analysis", "business-intelligence", "亚马逊", "选品", "市场调研"]
-version: 1.0.2
+version: 2.0.0
 homepage: https://pangolinfo.com/?referrer=clawhub_product_discovery
 ---
 ## 📦 Bundled Tools (Built-in Capabilities)

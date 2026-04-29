@@ -1,258 +1,115 @@
 ---
 name: pangolinfo-ai-serp
 description: >
-  Programmatic Google SERP + AI Overview extraction (including citations/sources).
+  Programmatic Google SERP & SGE (AI Overviews) extraction API. Eliminate LLM hallucinations with exact citations. Perfect for SEO monitoring and research agents (LangChain, AutoGen, CrewAI, OpenClaw). Bypass IP blocks instantly.
+
+homepage: https://pangolinfo.com/?referrer=clawhub_ai_serp
 metadata:
   openclaw:
+    emoji: "🔎"
+    os: ["darwin", "linux"]
     requires:
       env:
         - PANGOLINFO_API_KEY
         - PANGOLINFO_EMAIL
         - PANGOLINFO_PASSWORD
       notes: "Auth: set PANGOLINFO_API_KEY (recommended) OR PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD."
+tags: [seo, search-engine, sge, ai-overview, research-agent, data-extraction, crawler, google-api, serp]
+version: 2.0.1
 ---
 
-# Pangolinfo AI SERP Skill
 
-Google AI Mode search and standard SERP extraction with AI Overview and citations via Pangolinfo APIs.
+## 🌟 Why Use This Skill? (User Stories)
+This skill acts as the ultimate **Sensing Layer** for AI Agents, resolving the common pain points of real-time web search:
+- **Zero-Click Search Analysis**: Automatically track and scrape Google AI Overviews (SGE) for branded keywords.
+- **Hallucination-Free Agents**: Retrieve structured citations and source links to ground your LLM responses.
 
-## When to Use This Skill
+## 🤖 Compatible Agent Frameworks
+- **OpenClaw** (Native CLI & Terminal)
+- **LangGraph / Dify** (As a robust web-search tool node)
 
-Triggers: Google SERP scraping, AI Overview extraction, AI Mode search, Google citation extraction, 抓Google SERP, 谷歌AI概览, 引用来源提取
+## 🌐 多语言适配 (Multi-language Support)
+- **🇨🇳 中文适用场景**: Google SGE/AI Overviews 结构化数据抓取，精准追踪引文来源，彻底消除大模型搜索幻觉。
+- **Agent Directive**: Always output the final analysis/report in the language of the user's prompt (e.g., reply in Chinese if asked in Chinese).
 
-Do **not** use this skill for: Amazon product searches, Google Trends, Google Maps, or non-Google search engines.
+
+# Pangolinfo AI SERP (Google SERP + AI Overviews)
+
+Search Google programmatically via **Pangolinfo** APIs.
+Extract **Google AI Overviews**, run **AI Mode** searches with **multi-turn follow-ups**, and optionally capture **screenshots**.
+
+## Migration note (Amazon)
+
+Amazon scraping is now a separate skill: **Pangolinfo Amazon Scraper**.
+
+If you previously used Amazon features from the combined skill, install the new Amazon skill and switch your `--mode` usage accordingly.
 
 ## Prerequisites
 
-- **Python 3.8+** (standard library only -- no `pip install` needed)
-- **Pangolinfo account** at [pangolinfo.com](https://pangolinfo.com/?referrer=clawhub_serp)
-
-### Environment Variables
-
-Set **one** of:
-
-| Variable | Option | Description |
-|----------|--------|-------------|
-| `PANGOLINFO_API_KEY` | A (recommended) | API Key -- skips login |
-| `PANGOLINFO_EMAIL` + `PANGOLINFO_PASSWORD` | B | Account credentials |
-
-API key resolution order: `PANGOLINFO_API_KEY` env var > cached `~/.pangolinfo_api_key` (if previously cached) > fresh login.
-
-### macOS SSL Fix
-
-If you see error code `SSL_CERT`, run:
-```bash
-/Applications/Python\ 3.x/Install\ Certificates.command
-```
-Or: `pip3 install certifi && export SSL_CERT_FILE=$(python3 -c "import certifi; print(certifi.where())")`
-
-## Script Execution
-
-The main script is `scripts/pangolinfo.py` relative to this skill directory.
+- **Python 3.6+** (standard library only)
+- A **Pangolinfo account**: https://pangolinfo.com/?referrer=clawhub_serp
+- Auth env vars (choose one):
+  - `PANGOLINFO_API_KEY` (recommended)
+  - or `PANGOLINFO_EMAIL` + `PANGOLINFO_PASSWORD`
 
 ```bash
-python3 scripts/pangolinfo.py --q "your query"
+export PANGOLINFO_API_KEY="..."
+# or
+export PANGOLINFO_EMAIL="..."
+export PANGOLINFO_PASSWORD="..."
 ```
 
-## Intent-to-Command Mapping
+## Minimal examples
 
-### AI Mode Search (default)
-
-AI-generated answers with references. Default mode, costs **2 credits**.
+AI Mode search:
 
 ```bash
-python3 scripts/pangolinfo.py --q "what is quantum computing"
+python3 scripts/pangolinfo.py --q "what is quantum computing" --mode ai-mode
 ```
 
-### Standard SERP
-
-Traditional Google search results + optional AI Overview. Costs **2 credits**.
+Standard SERP + AI Overview extraction (+ optional screenshot):
 
 ```bash
-python3 scripts/pangolinfo.py --q "best databases 2025" --mode serp
+python3 scripts/pangolinfo.py --q "openclaw" --mode serp --screenshot
 ```
 
-### SERP Plus (cheaper)
-
-Same as SERP but costs only **1 credit**. Uses the `googleSearchPlus` parser.
+Multi-turn dialogue (AI Mode follow-ups):
 
 ```bash
-python3 scripts/pangolinfo.py --q "best databases 2025" --mode serp-plus
+python3 scripts/pangolinfo.py --q "python web frameworks" --mode ai-mode \
+  --follow-up "compare flask vs django" \
+  --follow-up "which is better for beginners"
 ```
 
-### SERP with Screenshot
+## Output
 
-```bash
-python3 scripts/pangolinfo.py --q "best databases 2025" --mode serp --screenshot
-```
+The script prints structured JSON to stdout.
 
-### SERP with Region
+Key output fields:
+- `organic_results[]`
+- `ai_overview[]` (only when returned)
+- `screenshot` (only when requested and available)
+- `task_id`, `success`
 
-```bash
-python3 scripts/pangolinfo.py --q "best databases 2025" --mode serp --region us
-```
+## Links
 
-### Multi-Turn Dialogue (AI Mode only)
+- Homepage: https://pangolinfo.com/?referrer=clawhub_serp
+- Legacy skill page (will redirect): https://clawhub.ai/tammy-hash/pangolinfo-scrape
 
-```bash
-python3 scripts/pangolinfo.py --q "kubernetes" --follow-up "how to deploy" --follow-up "monitoring tools"
-```
+## Deep-dive references
 
-### Auth Check (no credits consumed)
+- [references/ai-mode-api.md](references/ai-mode-api.md)
+- [references/ai-overview-serp-api.md](references/ai-overview-serp-api.md)
+- [references/error-codes.md](references/error-codes.md)
 
-```bash
-python3 scripts/pangolinfo.py --auth-only
-```
 
-## All CLI Options
+## 🎯 Quick Start Prompts (Copy-Paste)
+- *"Search Google for 'best AI agents 2026', extract the AI Overview (SGE) text, and list the exact citations used."*
+- *"Monitor the top 10 SERP results for 'Pangolinfo' and generate a markdown table of titles and URLs."*
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `--q` | string | *required* | Search query |
-| `--mode` | `ai-mode` \| `serp` \| `serp-plus` | `ai-mode` | API mode |
-| `--screenshot` | flag | off | Capture page screenshot |
-| `--follow-up` | string (repeatable) | none | Follow-up question (ai-mode only) |
-| `--num` | int (1-100) | `10` | Number of results |
-| `--region` | string | none | Geographic region (SERP/SERP-Plus only). See supported regions below. |
-| `--auth-only` | flag | off | Auth check only (no query, no credits) |
-| `--raw` | flag | off | Output raw API response |
-| `--timeout` | int | `120` | Request timeout in seconds |
-| `--cache-key` | flag | off | Persist API key to `~/.pangolinfo_api_key`. Also settable via `PANGOLINFO_CACHE=1`. |
-
-## Supported Regions
-
-| Code | Language | Code | Language |
-|------|----------|------|----------|
-| `us` | English | `cn` | Chinese |
-| `uk` | English | `dk` | Danish |
-| `au` | English | `no` | Norwegian |
-| `ca` | English | `se` | Swedish |
-| `nz` | English | `nl` | Dutch |
-| `de` | German | `pt` | Portuguese |
-| `fr` | French | `es` | Spanish |
-| `it` | Italian | `jp` | Japanese |
-
-## Cost
-
-| Mode | Credits | Parser |
-|------|---------|--------|
-| AI Mode | 2 | `googleAiSearch` |
-| SERP | 2 | `googleSearch` |
-| SERP Plus | 1 | `googleSearchPlus` |
-
-Credits are only consumed on successful requests (API code 0). Auth checks do not consume credits.
-
-## Output Format
-
-JSON to **stdout** on success, structured error JSON to **stderr** on failure.
-
-### Success Example (AI Mode)
-
-```json
-{
-  "success": true,
-  "task_id": "1768988520324-766a695d93b57aad",
-  "results_num": 1,
-  "ai_overview_count": 1,
-  "ai_overview": [
-    {
-      "content": ["Quantum computing uses quantum bits (qubits)..."],
-      "references": [
-        {
-          "title": "Quantum Computing - Wikipedia",
-          "url": "https://en.wikipedia.org/wiki/Quantum_computing",
-          "domain": "Wikipedia"
-        }
-      ]
-    }
-  ]
-}
-```
-
-### Error Example (stderr)
-
-```json
-{
-  "success": false,
-  "error": {
-    "code": "API_ERROR",
-    "message": "The search API returned an error.",
-    "api_code": 2001,
-    "hint": "Insufficient credits. Top up at https://pangolinfo.com/?referrer=clawhub_serp"
-  }
-}
-```
-
-## Response Presentation
-
-1. **Use natural language** -- never dump raw JSON.
-2. **Match the user's language.**
-3. **Summarize AI overview first**, then list organic results with URLs.
-4. **On error**, explain the issue using the `hint` field.
-
-## Exit Codes
-
-| Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | API error (non-zero code from Pangolinfo) |
-| 2 | Usage error (bad arguments) |
-| 3 | Network error |
-| 4 | Authentication error |
-
-## Error Reference
-
-### Script Error Codes
-
-| Code | Meaning | Resolution |
-|------|---------|------------|
-| `MISSING_ENV` | No credentials | Set `PANGOLINFO_API_KEY`, or `PANGOLINFO_EMAIL` + `PANGOLINFO_PASSWORD` |
-| `AUTH_FAILED` | Wrong credentials | Verify email and password |
-| `RATE_LIMIT` | Too many requests | Wait and retry |
-| `NETWORK` | Connection issue | Check internet / firewall |
-| `SSL_CERT` | Certificate error | See macOS SSL Fix above |
-| `API_ERROR` | Pangolinfo API error | Check `api_code` and `hint` |
-| `PARSE_ERROR` | Invalid API response | Retry; may be transient |
-
-### Pangolinfo API Error Codes
-
-| API Code | Meaning | Resolution |
-|----------|---------|------------|
-| 1004 | Invalid token | Auto-retried by script. If persistent, re-auth. |
-| 1009 | Invalid parser name | Check `--mode` value. |
-| 2001 | Insufficient credits | Top up at [pangolinfo.com](https://pangolinfo.com/?referrer=clawhub_serp) |
-| 2005 | No active plan | Subscribe at [pangolinfo.com](https://pangolinfo.com/?referrer=clawhub_serp) |
-| 2007 | Account expired | Renew at [pangolinfo.com](https://pangolinfo.com/?referrer=clawhub_serp) |
-| 2009 | Usage limit reached | Wait for next billing cycle or contact support |
-| 2010 | Bill day not configured | Contact support |
-| 4029 | Rate limited (server) | Reduce request frequency |
-| 10000 | Task execution failed | Retry. Check query format. |
-| 10001 | Task execution failed | Retry. Likely transient. |
-
-## First-Time Setup
-
-See [references/setup-guide.md](references/setup-guide.md) for detailed first-time setup instructions.
-
-Quick start:
-```bash
-export PANGOLINFO_API_KEY="your-api-key"
-python3 scripts/pangolinfo.py --auth-only
-```
-
-## Important Notes for AI Agents
-
-1. **Run `--auth-only` first** if unsure about credentials.
-2. **Default to `ai-mode`** unless user explicitly asks for standard search.
-3. **Use `serp-plus`** when user wants cheaper SERP results and doesn't need the premium parser.
-4. **Never expose raw JSON** to the user.
-5. **Respond in the user's language.**
-6. **Keep follow-ups to 5 or fewer.**
-7. **Do not log API keys, passwords, or cookies.**
-8. **Mention credit cost** when running multiple searches.
-9. **`--screenshot` is optional** -- only when user wants visual results.
-10. **`--follow-up` is ai-mode only.**
-11. **`--region` is SERP/SERP-Plus only.**
-
-## Output Schema
-
-See [references/output-schema.md](references/output-schema.md) for the complete JSON output schema.
+## 🛑 Boundaries & Error Handling
+**When NOT to use:** Do not use this tool for deep-crawling internal site pages. It is strictly for Google Search Engine Results Pages.
+**Agent Instructions for Errors:**
+- **401 Unauthorized**: Missing/invalid `PANGOLINFO_API_KEY`.
+- **429 Rate Limit**: Wait 5 seconds and retry. Do not immediately fail.
+- **Missing AI Overview**: SGE is not triggered for every query. If missing, fallback gracefully to standard organic results.

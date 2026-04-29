@@ -15,7 +15,7 @@ metadata:
       notes: "Set PANGOLINFO_API_KEY (recommended). Alternative: set PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD instead (optional, for email/password login). Credentials are NOT cached to disk by default; disk persistence only activates with explicit --cache-key flag or PANGOLINFO_CACHE=1."
 tags: [amazon, niche-discovery, ecommerce, market-research, data-analysis, bestseller, api, scraping, product-hunting]
 homepage: https://pangolinfo.com/?referrer=clawhub_amz_niche
-version: 1.0.2
+version: 2.0.0
 ---
 
 

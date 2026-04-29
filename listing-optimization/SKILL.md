@@ -13,7 +13,7 @@ metadata:
         - PANGOLINFO_PASSWORD
       notes: "Auth: set PANGOLINFO_API_KEY (recommended) OR PANGOLINFO_EMAIL + PANGOLINFO_PASSWORD. All bundled scripts share the same credentials."
 tags: ["amazon", "listing-optimization", "seo", "copywriting", "keyword-research", "ecommerce", "fba", "content-generation", "voc", "sentiment-analysis", "亚马逊", "listing优化", "关键词", "跨境电商"]
-version: 1.0.2
+version: 2.0.0
 homepage: https://pangolinfo.com/?referrer=clawhub_listing_optimization
 ---
 ## 📦 Bundled Tools (Built-in Capabilities)
