@@ -66,6 +66,34 @@ def authenticate(email, password):
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
             result = json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        if e.code in (401, 403):
+            print(
+                json.dumps({
+                    "success": False,
+                    "error": {
+                        "code": "AUTH_FAILED",
+                        "message": "Authentication failed.",
+                        "api_code": e.code,
+                        "hint": "Verify PANGOLIN_EMAIL and PANGOLIN_PASSWORD are correct.",
+                    },
+                }),
+                file=sys.stderr,
+            )
+            sys.exit(EXIT_AUTH_ERROR)
+        print(
+            json.dumps({
+                "success": False,
+                "error": {
+                    "code": "API_ERROR",
+                    "message": f"HTTP {e.code} from auth endpoint.",
+                    "api_code": e.code,
+                    "hint": "Auth endpoint returned an error. Retry shortly.",
+                },
+            }),
+            file=sys.stderr,
+        )
+        sys.exit(EXIT_AUTH_ERROR)
     except urllib.error.URLError as e:
         print(json.dumps({"error": f"Network error during auth: {e}"}), file=sys.stderr)
         sys.exit(EXIT_NETWORK_ERROR)
@@ -86,6 +114,55 @@ def authenticate(email, password):
     token = result["data"]
     save_cached_token(token)
     return token
+
+
+def probe_token(token, timeout=15):
+    """Verify token by hitting the scrape endpoint. 401/403 or code 1004 -> AUTH_FAILED."""
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {token}",
+        "User-Agent": "Mozilla/5.0",
+    }
+    payload = json.dumps({}).encode()
+    req = urllib.request.Request(SCRAPE_V1_ENDPOINT, data=payload, headers=headers, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            result = json.loads(resp.read())
+    except urllib.error.HTTPError as e:
+        if e.code in (401, 403):
+            print(
+                json.dumps({
+                    "success": False,
+                    "error": {
+                        "code": "AUTH_FAILED",
+                        "message": f"HTTP {e.code} from API: authentication failed.",
+                        "api_code": e.code,
+                        "hint": "Invalid token. Check your PANGOLIN_TOKEN (or PANGOLIN_EMAIL/PANGOLIN_PASSWORD) configuration.",
+                    },
+                }),
+                file=sys.stderr,
+            )
+            sys.exit(EXIT_AUTH_ERROR)
+        return True
+    except urllib.error.URLError as e:
+        print(json.dumps({"error": f"Network error during auth probe: {e}"}), file=sys.stderr)
+        sys.exit(EXIT_NETWORK_ERROR)
+
+    if result.get("code") == 1004:
+        print(
+            json.dumps({
+                "success": False,
+                "error": {
+                    "code": "AUTH_FAILED",
+                    "message": "Pangolinfo API rejected the token.",
+                    "api_code": 1004,
+                    "hint": "Invalid token. Check your PANGOLIN_TOKEN (or PANGOLIN_EMAIL/PANGOLIN_PASSWORD) configuration.",
+                },
+            }),
+            file=sys.stderr,
+        )
+        sys.exit(EXIT_AUTH_ERROR)
+    return True
 
 
 def get_token():
@@ -162,6 +239,20 @@ def call_api(token, body, endpoint, max_retries=3):
                 return json.loads(resp.read())
         except urllib.error.HTTPError as e:
             error_body = e.read().decode() if e.fp else ""
+            if e.code in (401, 403):
+                print(
+                    json.dumps({
+                        "success": False,
+                        "error": {
+                            "code": "AUTH_FAILED",
+                            "message": f"HTTP {e.code} from API: authentication failed.",
+                            "api_code": e.code,
+                            "hint": "Invalid token. Check your PANGOLIN_TOKEN (or PANGOLIN_EMAIL/PANGOLIN_PASSWORD) configuration.",
+                        },
+                    }),
+                    file=sys.stderr,
+                )
+                sys.exit(EXIT_AUTH_ERROR)
             if attempt < max_retries - 1:
                 time.sleep(2**attempt)
                 continue
@@ -236,6 +327,7 @@ def main():
     token = get_token()
 
     if args.auth_only:
+        probe_token(token)
         print(
             json.dumps(
                 {
