@@ -158,6 +158,20 @@ def _http_post(url, body_dict, headers=None, timeout=30):
 def authenticate(email, password):
     try:
         result = _http_post(AUTH_ENDPOINT, {"email": email, "password": password})
+    except urllib.error.HTTPError as e:
+        if e.code in (401, 403):
+            _emit_error(
+                "AUTH_FAILED", "Authentication failed.",
+                hint="Verify PANGOLINFO_EMAIL and PANGOLINFO_PASSWORD are correct.",
+                api_code=e.code,
+                exit_code=EXIT_AUTH_ERROR,
+            )
+        _emit_error(
+            "API_ERROR", f"HTTP {e.code} from auth endpoint.",
+            hint="Auth endpoint returned an error. Retry shortly.",
+            api_code=e.code,
+            exit_code=EXIT_AUTH_ERROR,
+        )
     except urllib.error.URLError:
         _emit_error(
             "NETWORK", "Network error during authentication.",
@@ -179,7 +193,7 @@ def authenticate(email, password):
 
 
 def get_api_key():
-    api_key = os.environ.get("PANGOLINFO_API_KEY")
+    api_key = os.environ.get("PANGOLINFO_API_KEY") or os.environ.get("PANGOLIN_TOKEN")
     if api_key:
         save_cached_api_key(api_key)
         return api_key
@@ -188,27 +202,67 @@ def get_api_key():
     if api_key:
         return api_key
 
-    email = os.environ.get("PANGOLINFO_EMAIL")
-    password = os.environ.get("PANGOLINFO_PASSWORD")
+    email = os.environ.get("PANGOLINFO_EMAIL") or os.environ.get("PANGOLIN_EMAIL")
+    password = os.environ.get("PANGOLINFO_PASSWORD") or os.environ.get("PANGOLIN_PASSWORD")
     if not email or not password:
         _emit_error(
             "MISSING_ENV", "No authentication credentials found.",
-            hint="Set PANGOLINFO_API_KEY, or both PANGOLINFO_EMAIL and PANGOLINFO_PASSWORD.",
+            hint="Set PANGOLINFO_API_KEY (or legacy PANGOLIN_TOKEN), or both PANGOLINFO_EMAIL and PANGOLINFO_PASSWORD (legacy PANGOLIN_EMAIL/PANGOLIN_PASSWORD also accepted).",
             exit_code=EXIT_AUTH_ERROR,
         )
     return authenticate(email, password)
 
 
 def refresh_api_key():
-    email = os.environ.get("PANGOLINFO_EMAIL")
-    password = os.environ.get("PANGOLINFO_PASSWORD")
+    email = os.environ.get("PANGOLINFO_EMAIL") or os.environ.get("PANGOLIN_EMAIL")
+    password = os.environ.get("PANGOLINFO_PASSWORD") or os.environ.get("PANGOLIN_PASSWORD")
     if not email or not password:
         _emit_error(
             "MISSING_ENV", "Cannot refresh API key without credentials.",
-            hint="Set PANGOLINFO_EMAIL and PANGOLINFO_PASSWORD environment variables.",
+            hint="Set PANGOLINFO_EMAIL and PANGOLINFO_PASSWORD (legacy PANGOLIN_EMAIL/PANGOLIN_PASSWORD also accepted).",
             exit_code=EXIT_AUTH_ERROR,
         )
     return authenticate(email, password)
+
+
+def probe_api_key(api_key, timeout=15):
+    """Verify api_key by hitting a real authenticated endpoint.
+
+    Returns True on success. Emits AUTH_FAILED and exits on 401/403 or
+    Pangolinfo error code 1004 (invalid token). Other API errors (e.g. 1002
+    invalid params) are treated as success because the token itself was
+    accepted before body validation ran.
+    """
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "User-Agent": "Pangolinfo-CLI/2.0",
+    }
+    try:
+        result = _http_post(WIPO_ENDPOINT, {}, headers=headers, timeout=timeout)
+    except urllib.error.HTTPError as e:
+        if e.code in (401, 403):
+            _emit_error(
+                "AUTH_FAILED", f"HTTP {e.code} from API: authentication failed.",
+                hint="Invalid API key or token. Check your PANGOLINFO_API_KEY (or PANGOLINFO_EMAIL/PANGOLINFO_PASSWORD) configuration.",
+                api_code=e.code,
+                exit_code=EXIT_AUTH_ERROR,
+            )
+        return True
+    except urllib.error.URLError:
+        _emit_error(
+            "NETWORK", "Network error during auth probe.",
+            hint="Check your internet connection and try again.",
+            exit_code=EXIT_NETWORK_ERROR,
+        )
+
+    if result.get("code") == 1004:
+        _emit_error(
+            "AUTH_FAILED", "Pangolinfo API rejected the token.",
+            hint="Invalid API key or token. Check your PANGOLINFO_API_KEY (or PANGOLINFO_EMAIL/PANGOLINFO_PASSWORD) configuration.",
+            api_code=1004,
+            exit_code=EXIT_AUTH_ERROR,
+        )
+    return True
 
 
 # ---------------------------------------------------------------------------
@@ -275,6 +329,14 @@ def call_api(api_key, body, max_retries=3, timeout=120):
                     "RATE_LIMIT", "Rate limited by API server.",
                     hint="Wait a moment and retry, or reduce request frequency.",
                     exit_code=EXIT_NETWORK_ERROR,
+                )
+
+            if e.code in (401, 403):
+                _emit_error(
+                    "AUTH_FAILED", f"HTTP {e.code} from API: authentication failed.",
+                    hint="Invalid API key or token. Check your PANGOLINFO_API_KEY (or PANGOLINFO_EMAIL/PANGOLINFO_PASSWORD) configuration.",
+                    api_code=e.code,
+                    exit_code=EXIT_AUTH_ERROR,
                 )
 
             if attempt < max_retries - 1:
@@ -444,6 +506,7 @@ def main():
     api_key = get_api_key()
 
     if args.auth_only:
+        probe_api_key(api_key, timeout=min(args.timeout, 30))
         preview = f"{api_key[:4]}...{api_key[-4:]}" if len(api_key) > 12 else "***"
         print(json.dumps({
             "success": True,

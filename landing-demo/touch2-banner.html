@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>触点 2 · 安装脚本 Banner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f7f8fa;
+    --bg-term: #0d1117;
+    --border: #e6e8ec;
+    --text: #0a0a0a;
+    --text-soft: #5a5f6a;
+    --text-mute: #8a8f99;
+    --brand: #ff5b1f;
+    --brand-soft: #fff1ea;
+    --brand-dark: #e04a10;
+
+    --term-text: #e6edf3;
+    --term-dim: #7d8590;
+    --term-green: #3fb950;
+    --term-blue: #58a6ff;
+    --term-yellow: #d29922;
+    --term-purple: #bc8cff;
+    --term-orange: #ff7b3a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    background: var(--bg-page);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  .top-bar {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 600; color: var(--text-soft);
+  }
+  .back-link:hover { color: var(--text); }
+  .touch-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 12px; border-radius: 999px;
+    background: var(--brand-soft); color: var(--brand-dark);
+    font-size: 12px; font-weight: 700;
+  }
+
+  .container {
+    max-width: 1000px; margin: 0 auto;
+    padding: 48px 24px;
+  }
+
+  h1 {
+    font-size: 32px; font-weight: 800; letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  .subtitle {
+    color: var(--text-soft); font-size: 16px;
+    margin-bottom: 32px;
+  }
+
+  /* ---------- Terminal ---------- */
+  .terminal {
+    background: var(--bg-term);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(10,10,10,0.25), 0 10px 30px rgba(10,10,10,0.15);
+    margin-bottom: 36px;
+  }
+  .term-header {
+    background: #161b22;
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid #21262d;
+  }
+  .term-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .term-dot.red { background: #ff5f57; }
+  .term-dot.yellow { background: #febc2e; }
+  .term-dot.green { background: #28c840; }
+  .term-title {
+    margin-left: 12px;
+    color: var(--term-dim); font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .term-body {
+    padding: 22px 24px 26px;
+    font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+    font-size: 13.5px; line-height: 1.7;
+    color: var(--term-text);
+    min-height: 360px;
+  }
+  .term-body .prompt { color: var(--term-green); }
+  .term-body .dim { color: var(--term-dim); }
+  .term-body .blue { color: var(--term-blue); }
+  .term-body .yellow { color: var(--term-yellow); }
+  .term-body .green { color: var(--term-green); }
+  .term-body .orange { color: var(--term-orange); }
+  .term-body .purple { color: var(--term-purple); }
+  .term-body .bold { font-weight: 700; }
+  .term-body .star { color: #f1c40f; }
+
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 16px;
+    background: var(--term-text);
+    vertical-align: text-bottom;
+    animation: blink 1s steps(2) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .replay-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 10px;
+    background: var(--text); color: white;
+    border: none; cursor: pointer;
+    font-size: 14px; font-weight: 600;
+    font-family: inherit;
+  }
+  .replay-btn:hover { background: #1f1f1f; }
+
+  /* ---------- Annotation box ---------- */
+  .insight {
+    margin-top: 36px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+  }
+  .insight h3 {
+    font-size: 17px; font-weight: 700;
+    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .insight h3::before {
+    content: '💡'; font-size: 18px;
+  }
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+  }
+  .insight-item {
+    padding: 16px;
+    background: var(--bg-page);
+    border-radius: 12px;
+    border-left: 3px solid var(--brand);
+  }
+  .insight-item strong {
+    display: block;
+    font-size: 13px; font-weight: 700;
+    color: var(--text); margin-bottom: 4px;
+  }
+  .insight-item span {
+    font-size: 13px; color: var(--text-soft);
+    line-height: 1.5;
+  }
+
+  .nav-prev-next {
+    display: flex; justify-content: space-between;
+    margin-top: 40px;
+    gap: 16px;
+  }
+  .nav-btn {
+    flex: 1; padding: 16px 20px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.15s ease;
+  }
+  .nav-btn:hover {
+    border-color: var(--brand);
+    transform: translateY(-2px);
+  }
+  .nav-btn-label {
+    font-size: 11px; color: var(--text-mute);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    font-weight: 600;
+  }
+  .nav-btn-title {
+    font-size: 15px; font-weight: 700;
+    margin-top: 4px;
+  }
+  .nav-btn.next { text-align: right; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a class="back-link" href="tour.html">← 返回总览</a>
+  <span class="touch-tag">触点 2 · 安装脚本 Banner</span>
+</div>
+
+<div class="container">
+  <h1>用户复制命令执行的那一刻</h1>
+  <p class="subtitle">脚本第一屏就把 GitHub URL 和 Star 数植入用户视野——哪怕跳过其他所有引导，这行字一定会被看到。</p>
+
+  <div class="terminal">
+    <div class="term-header">
+      <div class="term-dot red"></div>
+      <div class="term-dot yellow"></div>
+      <div class="term-dot green"></div>
+      <span class="term-title">~ — bash</span>
+    </div>
+    <div class="term-body" id="term-body"></div>
+  </div>
+
+  <button class="replay-btn" onclick="playScene()">↻ 重新播放</button>
+
+  <div class="insight">
+    <h3>这一屏的引导设计</h3>
+    <div class="insight-grid">
+      <div class="insight-item">
+        <strong>Banner 里的 Star 数</strong>
+        <span>用 ASCII 边框把数字框出来，视觉上像"勋章"，增加可信度</span>
+      </div>
+      <div class="insight-item">
+        <strong>GitHub URL 全文露出</strong>
+        <span>不是缩短链接，让用户记住完整路径，方便后续手动访问</span>
+      </div>
+      <div class="insight-item">
+        <strong>列出"将要做什么"</strong>
+        <span>化解 curl|sh 的安全顾虑——透明告知所有写入位置</span>
+      </div>
+      <div class="insight-item">
+        <strong>需要回车确认</strong>
+        <span>Y/n 提示让用户有"我在主动操作"的掌控感，不是被脚本绑架</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-prev-next">
+    <a class="nav-btn" href="index.html">
+      <div class="nav-btn-label">← 上一步</div>
+      <div class="nav-btn-title">触点 1 · 落地页</div>
+    </a>
+    <a class="nav-btn next" href="touch3-progress.html">
+      <div class="nav-btn-label">下一步 →</div>
+      <div class="nav-btn-title">触点 3 · 安装过程</div>
+    </a>
+  </div>
+</div>
+
+<script>
+  const term = document.getElementById('term-body');
+
+  const lines = [
+    { t: 0,    html: '<span class="prompt">$</span> curl -fsSL pangolinfo.dev/install | sh' },
+    { t: 600,  html: '' },
+    { t: 800,  html: '<span class="orange">╔══════════════════════════════════════════════════════╗</span>' },
+    { t: 900,  html: '<span class="orange">║</span>   <span class="bold">Pangolinfo Skills Installer</span>  <span class="dim">v1.0.0</span>              <span class="orange">║</span>' },
+    { t: 1000, html: '<span class="orange">║</span>                                                      <span class="orange">║</span>' },
+    { t: 1100, html: '<span class="orange">║</span>   <span class="blue">github.com/pangolinfo/skills</span>                       <span class="orange">║</span>' },
+    { t: 1200, html: '<span class="orange">║</span>   <span class="star">★ 1,247 stars</span>  ·  <span class="dim">12.8k installs</span>  ·  <span class="dim">MIT</span>      <span class="orange">║</span>' },
+    { t: 1300, html: '<span class="orange">╚══════════════════════════════════════════════════════╝</span>' },
+    { t: 1700, html: '' },
+    { t: 1900, html: '<span class="bold">This will install:</span>' },
+    { t: 2100, html: '  <span class="green">•</span> MCP server  <span class="dim">→</span>  ~/.claude/mcp.json' },
+    { t: 2300, html: '  <span class="green">•</span> 6 skills    <span class="dim">→</span>  ~/.claude/skills/pangolinfo/' },
+    { t: 2500, html: '  <span class="green">•</span> CLI binary  <span class="dim">→</span>  /usr/local/bin/pangolinfo' },
+    { t: 2900, html: '' },
+    { t: 3100, html: '<span class="dim">Detected AI agent:</span> <span class="purple">Claude Code</span>  <span class="dim">(macOS)</span>' },
+    { t: 3500, html: '' },
+    { t: 3800, html: 'Continue? <span class="bold">[Y/n]</span> <span class="cursor"></span>' },
+  ];
+
+  function playScene() {
+    term.innerHTML = '';
+    lines.forEach(({ t, html }) => {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.innerHTML = html || '&nbsp;';
+        term.appendChild(div);
+      }, t);
+    });
+  }
+
+  playScene();
+</script>
+
+</body>
+</html>

@@ -224,7 +224,7 @@ def authenticate(email, password):
 
 
 def get_api_key():
-    api_key = os.environ.get("PANGOLINFO_API_KEY")
+    api_key = os.environ.get("PANGOLINFO_API_KEY") or os.environ.get("PANGOLIN_TOKEN")
     if api_key:
         save_cached_api_key(api_key)
         return api_key
@@ -233,24 +233,24 @@ def get_api_key():
     if api_key:
         return api_key
 
-    email = os.environ.get("PANGOLINFO_EMAIL")
-    password = os.environ.get("PANGOLINFO_PASSWORD")
+    email = os.environ.get("PANGOLINFO_EMAIL") or os.environ.get("PANGOLIN_EMAIL")
+    password = os.environ.get("PANGOLINFO_PASSWORD") or os.environ.get("PANGOLIN_PASSWORD")
     if not email or not password:
         _emit_error(
             "MISSING_ENV", "No authentication credentials found.",
-            hint="Set PANGOLINFO_API_KEY, or both PANGOLINFO_EMAIL and PANGOLINFO_PASSWORD.",
+            hint="Set PANGOLINFO_API_KEY (or legacy PANGOLIN_TOKEN), or both PANGOLINFO_EMAIL and PANGOLINFO_PASSWORD (legacy PANGOLIN_EMAIL/PANGOLIN_PASSWORD also accepted).",
             exit_code=EXIT_AUTH_ERROR,
         )
     return authenticate(email, password)
 
 
 def refresh_api_key():
-    email = os.environ.get("PANGOLINFO_EMAIL")
-    password = os.environ.get("PANGOLINFO_PASSWORD")
+    email = os.environ.get("PANGOLINFO_EMAIL") or os.environ.get("PANGOLIN_EMAIL")
+    password = os.environ.get("PANGOLINFO_PASSWORD") or os.environ.get("PANGOLIN_PASSWORD")
     if not email or not password:
         _emit_error(
             "MISSING_ENV", "Cannot refresh API key without credentials.",
-            hint="Set PANGOLINFO_EMAIL and PANGOLINFO_PASSWORD environment variables.",
+            hint="Set PANGOLINFO_EMAIL and PANGOLINFO_PASSWORD (legacy PANGOLIN_EMAIL/PANGOLIN_PASSWORD also accepted).",
             exit_code=EXIT_AUTH_ERROR,
         )
     return authenticate(email, password)

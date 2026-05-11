@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>触点 4 · 安装完成</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f7f8fa;
+    --bg-term: #0d1117;
+    --border: #e6e8ec;
+    --text: #0a0a0a;
+    --text-soft: #5a5f6a;
+    --text-mute: #8a8f99;
+    --brand: #ff5b1f;
+    --brand-soft: #fff1ea;
+    --brand-dark: #e04a10;
+    --term-text: #e6edf3;
+    --term-dim: #7d8590;
+    --term-green: #3fb950;
+    --term-blue: #58a6ff;
+    --term-yellow: #d29922;
+    --term-purple: #bc8cff;
+    --term-orange: #ff7b3a;
+    --term-pink: #ff7b72;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text); background: var(--bg-page);
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: none; }
+  .top-bar {
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 600; color: var(--text-soft);
+  }
+  .back-link:hover { color: var(--text); }
+  .touch-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 12px; border-radius: 999px;
+    background: #ffe6d6; color: var(--brand-dark);
+    font-size: 12px; font-weight: 700;
+  }
+  .touch-tag::before {
+    content: '🎯'; font-size: 14px;
+  }
+  .container { max-width: 1000px; margin: 0 auto; padding: 48px 24px; }
+  h1 {
+    font-size: 32px; font-weight: 800; letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  .subtitle { color: var(--text-soft); font-size: 16px; margin-bottom: 32px; }
+  .highlight-banner {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px;
+    background: linear-gradient(135deg, var(--brand) 0%, #ff8a4c 100%);
+    color: white; font-size: 12px; font-weight: 700;
+    margin-bottom: 12px;
+  }
+  .terminal {
+    background: var(--bg-term); border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(10,10,10,0.25), 0 10px 30px rgba(10,10,10,0.15);
+    margin-bottom: 36px;
+  }
+  .term-header {
+    background: #161b22; padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid #21262d;
+  }
+  .term-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .term-dot.red { background: #ff5f57; }
+  .term-dot.yellow { background: #febc2e; }
+  .term-dot.green { background: #28c840; }
+  .term-title {
+    margin-left: 12px; color: var(--term-dim);
+    font-size: 13px; font-family: 'JetBrains Mono', monospace;
+  }
+  .term-body {
+    padding: 22px 24px 26px;
+    font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+    font-size: 13.5px; line-height: 1.8;
+    color: var(--term-text); min-height: 540px;
+  }
+  .dim { color: var(--term-dim); }
+  .blue { color: var(--term-blue); }
+  .green { color: var(--term-green); }
+  .yellow { color: var(--term-yellow); }
+  .orange { color: var(--term-orange); }
+  .purple { color: var(--term-purple); }
+  .pink { color: var(--term-pink); }
+  .bold { font-weight: 700; }
+  .star-y { color: #f1c40f; }
+  .cursor {
+    display: inline-block; width: 8px; height: 16px;
+    background: var(--term-text); vertical-align: text-bottom;
+    animation: blink 1s steps(2) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+  .pulse-star {
+    display: inline-block;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  .replay-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 10px;
+    background: var(--text); color: white;
+    border: none; cursor: pointer;
+    font-size: 14px; font-weight: 600; font-family: inherit;
+  }
+  .replay-btn:hover { background: #1f1f1f; }
+
+  .insight {
+    margin-top: 36px; background: white;
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 28px;
+  }
+  .insight.gold {
+    background: linear-gradient(135deg, #fff8eb 0%, #fff1ea 100%);
+    border-color: #ffd9a8;
+  }
+  .insight h3 {
+    font-size: 17px; font-weight: 700; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .insight h3::before { content: '💡'; font-size: 18px; }
+  .insight.gold h3::before { content: '🎯'; }
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+  }
+  .insight-item {
+    padding: 16px; background: rgba(255,255,255,0.7);
+    border-radius: 12px; border-left: 3px solid var(--brand);
+  }
+  .insight-item strong {
+    display: block; font-size: 13px; font-weight: 700;
+    color: var(--text); margin-bottom: 4px;
+  }
+  .insight-item span {
+    font-size: 13px; color: var(--text-soft); line-height: 1.5;
+  }
+  .nav-prev-next {
+    display: flex; justify-content: space-between;
+    margin-top: 40px; gap: 16px;
+  }
+  .nav-btn {
+    flex: 1; padding: 16px 20px;
+    background: white; border: 1px solid var(--border);
+    border-radius: 12px; transition: all 0.15s ease;
+  }
+  .nav-btn:hover { border-color: var(--brand); transform: translateY(-2px); }
+  .nav-btn-label {
+    font-size: 11px; color: var(--text-mute);
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  }
+  .nav-btn-title { font-size: 15px; font-weight: 700; margin-top: 4px; }
+  .nav-btn.next { text-align: right; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a class="back-link" href="tour.html">← 返回总览</a>
+  <span class="touch-tag">触点 4 · 安装完成（转化率最高）</span>
+</div>
+
+<div class="container">
+  <div class="highlight-banner">✦ 全链路转化率最高的一击</div>
+  <h1>"按回车支持我们"</h1>
+  <p class="subtitle">情感文案 + 默认动作就是开浏览器。用户什么都不做就是 Star——这是 Homebrew、rustup、deno 都在用的转化套路。</p>
+
+  <div class="terminal">
+    <div class="term-header">
+      <div class="term-dot red"></div>
+      <div class="term-dot yellow"></div>
+      <div class="term-dot green"></div>
+      <span class="term-title">~ — installation complete</span>
+    </div>
+    <div class="term-body" id="term-body"></div>
+  </div>
+
+  <button class="replay-btn" onclick="playScene()">↻ 重新播放</button>
+
+  <div class="insight gold">
+    <h3>这一屏的转化心理学</h3>
+    <div class="insight-grid">
+      <div class="insight-item">
+        <strong>先给价值再请求</strong>
+        <span>"Try this:" 给出具体可用案例，让用户立刻获得收益感，再请求 Star</span>
+      </div>
+      <div class="insight-item">
+        <strong>"We're a small team"</strong>
+        <span>触发同理心。开源界数据：比"give us a star"转化高 2-3 倍</span>
+      </div>
+      <div class="insight-item">
+        <strong>默认动作 = 开浏览器</strong>
+        <span>按 Enter 是用户最自然的动作，懒得动也会按一下结束流程</span>
+      </div>
+      <div class="insight-item">
+        <strong>"任意键跳过"</strong>
+        <span>给出退出选项，避免被绑架感。绝大多数人依然会按 Enter</span>
+      </div>
+      <div class="insight-item">
+        <strong>🙏 而非 ⭐</strong>
+        <span>用感谢符号而非索取符号。微小差异，转化率体感差很多</span>
+      </div>
+      <div class="insight-item">
+        <strong>跨平台自动开浏览器</strong>
+        <span>macOS open / Linux xdg-open / Windows start，零摩擦</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-prev-next">
+    <a class="nav-btn" href="touch3-progress.html">
+      <div class="nav-btn-label">← 上一步</div>
+      <div class="nav-btn-title">触点 3 · 安装过程</div>
+    </a>
+    <a class="nav-btn next" href="touch5-delayed.html">
+      <div class="nav-btn-label">下一步 →</div>
+      <div class="nav-btn-title">触点 5 · 延迟引导</div>
+    </a>
+  </div>
+</div>
+
+<script>
+  const term = document.getElementById('term-body');
+
+  const lines = [
+    { t: 0,    html: '<span class="green bold">✓ Installation complete</span> <span class="dim">in 23.4s</span>' },
+    { t: 400,  html: '' },
+    { t: 600,  html: '<span class="orange">╔══════════════════════════════════════════════════════╗</span>' },
+    { t: 700,  html: '<span class="orange">║</span>  <span class="bold">🎉  Welcome to Pangolinfo Skills</span>                    <span class="orange">║</span>' },
+    { t: 800,  html: '<span class="orange">╚══════════════════════════════════════════════════════╝</span>' },
+    { t: 1100, html: '' },
+    { t: 1300, html: '<span class="bold">Try this in Claude Code:</span>' },
+    { t: 1500, html: '  <span class="purple">›</span> "用 pangolinfo 查询 B0DYTF8L2W 的销量和价格走势"' },
+    { t: 1700, html: '  <span class="purple">›</span> "帮我做一份蓝牙耳机的 Amazon 选品报告"' },
+    { t: 1900, html: '  <span class="purple">›</span> "monitor 这 5 个 ASIN 每日竞品变化"' },
+    { t: 2300, html: '' },
+    { t: 2500, html: '<span class="dim">─────────────────────────────────────────────────────────</span>' },
+    { t: 2700, html: '' },
+    { t: 2900, html: '  <span class="star-y pulse-star">⭐</span>  <span class="bold">Enjoyed it? Star us on GitHub:</span>' },
+    { t: 3100, html: '      <span class="blue">https://github.com/pangolinfo/skills</span>' },
+    { t: 3400, html: '' },
+    { t: 3600, html: '  <span class="dim">We\'re a small team building this on weekends.</span>' },
+    { t: 3800, html: '  <span class="dim">Your star really helps us keep going.</span> <span>🙏</span>' },
+    { t: 4200, html: '' },
+    { t: 4500, html: '  <span class="green">[Press ENTER to open GitHub, any other key to skip]</span> <span class="cursor"></span>' },
+  ];
+
+  function playScene() {
+    term.innerHTML = '';
+    lines.forEach(({ t, html }) => {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.innerHTML = html || '&nbsp;';
+        term.appendChild(div);
+      }, t);
+    });
+  }
+  playScene();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pangolinfo Skills — 给所有 AI Agent 的电商数据能力</title>
+<meta name="description" content="一行命令，让 Claude Code、Cursor、Cline 立刻拥有 Amazon、AI SERP、WIPO 实时数据查询能力。完全开源，可审计安装。" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-soft: #f7f8fa;
+    --bg-code: #0d1117;
+    --text: #0a0a0a;
+    --text-soft: #5a5f6a;
+    --text-mute: #8a8f99;
+    --border: #e6e8ec;
+    --brand: #ff5b1f;      /* 橙色，模拟 pangolin 品牌色，可后续替换 */
+    --brand-soft: #fff1ea;
+    --brand-dark: #e04a10;
+    --accent: #0a0a0a;
+    --radius: 12px;
+    --radius-lg: 20px;
+    --shadow-sm: 0 1px 2px rgba(10,10,10,0.04), 0 1px 1px rgba(10,10,10,0.03);
+    --shadow-md: 0 4px 16px rgba(10,10,10,0.06), 0 2px 6px rgba(10,10,10,0.04);
+    --shadow-lg: 0 20px 50px rgba(10,10,10,0.08), 0 8px 20px rgba(10,10,10,0.05);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  code, pre { font-family: 'JetBrains Mono', Consolas, Monaco, monospace; }
+
+  /* ---------------- Top Nav ---------------- */
+  .nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 1200px; margin: 0 auto; padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 700; font-size: 17px; letter-spacing: -0.01em;
+  }
+  .logo-mark {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: linear-gradient(135deg, var(--brand) 0%, #ff8a4c 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 800; font-size: 14px;
+  }
+  .nav-links {
+    display: flex; align-items: center; gap: 28px;
+    font-size: 14px; color: var(--text-soft); font-weight: 500;
+  }
+  .nav-links a:hover { color: var(--text); }
+  .star-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 7px 14px; border-radius: 999px;
+    background: var(--text); color: white;
+    font-size: 13px; font-weight: 600;
+    transition: transform 0.15s ease;
+  }
+  .star-badge:hover { transform: translateY(-1px); }
+  .star-badge .star-icon { font-size: 14px; }
+  .star-count {
+    background: rgba(255,255,255,0.15);
+    padding: 2px 8px; border-radius: 999px;
+    font-size: 12px;
+  }
+
+  /* ---------------- Hero ---------------- */
+  .hero {
+    max-width: 1200px; margin: 0 auto;
+    padding: 80px 24px 60px;
+    text-align: center;
+  }
+  .badge-row {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px;
+    background: var(--brand-soft); color: var(--brand-dark);
+    font-size: 13px; font-weight: 600;
+    margin-bottom: 24px;
+  }
+  .badge-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--brand); display: inline-block;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  h1 {
+    font-size: clamp(36px, 5vw, 60px);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 20px;
+  }
+  h1 .gradient {
+    background: linear-gradient(135deg, var(--brand) 0%, #ff8a4c 50%, #ffb380 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .subtitle {
+    font-size: 19px; color: var(--text-soft);
+    max-width: 640px; margin: 0 auto 40px;
+    line-height: 1.5;
+  }
+
+  /* ---------------- Install Command ---------------- */
+  .install-wrap {
+    max-width: 680px; margin: 0 auto 32px;
+  }
+  .install-box {
+    display: flex; align-items: center;
+    background: var(--bg-code);
+    border-radius: var(--radius);
+    padding: 4px 4px 4px 20px;
+    box-shadow: var(--shadow-lg);
+    text-align: left;
+  }
+  .install-prompt {
+    color: #7d8590; font-size: 15px; margin-right: 10px; user-select: none;
+  }
+  .install-cmd {
+    flex: 1;
+    color: #e6edf3; font-size: 15px;
+    overflow-x: auto; white-space: nowrap;
+    padding: 16px 0;
+  }
+  .install-cmd .keyword { color: #79c0ff; }
+  .install-cmd .string { color: #a5d6ff; }
+  .copy-btn {
+    background: #21262d; color: #e6edf3;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: background 0.15s ease;
+  }
+  .copy-btn:hover { background: #30363d; }
+  .copy-btn.copied { background: #1f6f3f; }
+
+  /* ---------------- Hero CTAs ---------------- */
+  .hero-ctas {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    margin-bottom: 56px;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 22px; border-radius: 10px;
+    font-size: 15px; font-weight: 600;
+    transition: all 0.15s ease;
+    border: 1px solid transparent;
+  }
+  .btn-primary {
+    background: var(--text); color: white;
+  }
+  .btn-primary:hover { background: #1f1f1f; transform: translateY(-1px); }
+  .btn-ghost {
+    background: white; color: var(--text);
+    border-color: var(--border);
+  }
+  .btn-ghost:hover { background: var(--bg-soft); border-color: #d0d4db; }
+
+  /* ---------------- Compatibility row ---------------- */
+  .compat {
+    max-width: 900px; margin: 0 auto;
+    padding: 28px;
+    background: var(--bg-soft);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border);
+  }
+  .compat-title {
+    font-size: 12px; font-weight: 600;
+    color: var(--text-mute); text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-align: center; margin-bottom: 18px;
+  }
+  .compat-grid {
+    display: flex; justify-content: center; flex-wrap: wrap;
+    gap: 32px;
+  }
+  .compat-item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 500; color: var(--text);
+  }
+  .compat-check {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--brand-soft); color: var(--brand-dark);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+
+  /* ---------------- Sections ---------------- */
+  section { padding: 80px 24px; }
+  .section-inner { max-width: 1200px; margin: 0 auto; }
+  .section-head { text-align: center; margin-bottom: 56px; }
+  .section-head h2 {
+    font-size: clamp(28px, 3.5vw, 40px);
+    font-weight: 800; letter-spacing: -0.02em;
+    margin-bottom: 14px;
+  }
+  .section-head p {
+    color: var(--text-soft); font-size: 17px;
+    max-width: 560px; margin: 0 auto;
+  }
+
+  /* ---------------- Skills grid ---------------- */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .skill-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  .skill-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--brand);
+  }
+  .skill-icon {
+    width: 44px; height: 44px; border-radius: 10px;
+    background: var(--brand-soft);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin-bottom: 16px;
+  }
+  .skill-card h3 {
+    font-size: 17px; font-weight: 700; margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .skill-card p {
+    font-size: 14px; color: var(--text-soft);
+    line-height: 1.55; margin-bottom: 16px;
+  }
+  .skill-tag {
+    display: inline-block;
+    padding: 3px 10px; border-radius: 6px;
+    background: var(--bg-soft);
+    font-size: 11px; font-weight: 600; color: var(--text-mute);
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .skill-tag.mcp { background: #eef6ff; color: #0969da; }
+  .skill-tag.skill { background: #f4f0ff; color: #6f42c1; }
+
+  /* ---------------- Why us / Social proof ---------------- */
+  .proof {
+    background: var(--bg-soft);
+  }
+  .proof-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 24px;
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .stat {
+    padding: 28px 20px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .stat-num {
+    font-size: 36px; font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--brand) 0%, #ff8a4c 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .stat-label {
+    font-size: 13px; color: var(--text-mute);
+    margin-top: 6px; font-weight: 500;
+  }
+
+  /* ---------------- Final CTA ---------------- */
+  .final-cta {
+    text-align: center;
+    padding: 80px 24px;
+    background: linear-gradient(180deg, white 0%, var(--brand-soft) 100%);
+  }
+  .final-cta h2 {
+    font-size: clamp(28px, 3.5vw, 40px);
+    font-weight: 800; letter-spacing: -0.02em;
+    margin-bottom: 14px;
+  }
+  .final-cta p {
+    color: var(--text-soft); font-size: 17px;
+    max-width: 520px; margin: 0 auto 32px;
+  }
+  .heart-line {
+    margin-top: 28px; font-size: 14px; color: var(--text-mute);
+  }
+
+  /* ---------------- Footer ---------------- */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 24px;
+    text-align: center;
+    color: var(--text-mute);
+    font-size: 13px;
+  }
+
+  /* ---------------- Toast ---------------- */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--text); color: white;
+    padding: 12px 20px; border-radius: 999px;
+    font-size: 14px; font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    transition: all 0.25s ease;
+    pointer-events: none;
+    z-index: 100;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  @media (max-width: 640px) {
+    .nav-links { gap: 14px; font-size: 13px; }
+    .hero { padding: 56px 20px 40px; }
+    .compat-grid { gap: 16px; }
+    section { padding: 56px 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ==================== NAV ==================== -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a class="logo" href="/">
+      <span class="logo-mark">P</span>
+      <span>Pangolinfo Skills</span>
+    </a>
+    <div class="nav-links">
+      <a href="#skills">Skills</a>
+      <a href="#docs">文档</a>
+      <a href="#install">安装</a>
+      <a class="star-badge" href="https://github.com/pangolinfo/skills" target="_blank">
+        <span class="star-icon">⭐</span>
+        <span>Star on GitHub</span>
+        <span class="star-count" id="star-count">1.2k</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ==================== HERO ==================== -->
+<section class="hero" id="install">
+  <div class="badge-row">
+    <span class="badge-dot"></span>
+    支持 Claude Code · Cursor · Cline · Continue
+  </div>
+
+  <h1>
+    给所有 AI Agent 的<br>
+    <span class="gradient">电商数据能力</span>
+  </h1>
+  <p class="subtitle">
+    一行命令，让你的 AI 立刻拥有 Amazon、AI SERP、WIPO 的实时数据查询能力。
+    MCP 协议原生支持，完全开源，可审计安装。
+  </p>
+
+  <div class="install-wrap">
+    <div class="install-box">
+      <span class="install-prompt">$</span>
+      <div class="install-cmd">
+        <span class="keyword">curl</span> -fsSL <span class="string">pangolinfo.dev/install</span> | <span class="keyword">sh</span>
+      </div>
+      <button class="copy-btn" onclick="copyInstall(this)">
+        <span id="copy-text">复制</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="hero-ctas">
+    <a class="btn btn-primary" href="https://github.com/pangolinfo/skills" target="_blank">
+      ⭐ Star on GitHub
+    </a>
+    <a class="btn btn-ghost" href="#docs">查看文档 →</a>
+  </div>
+
+  <div class="compat">
+    <div class="compat-title">兼容主流 AI Agent 框架</div>
+    <div class="compat-grid">
+      <div class="compat-item"><span class="compat-check">✓</span> Claude Code</div>
+      <div class="compat-item"><span class="compat-check">✓</span> Cursor</div>
+      <div class="compat-item"><span class="compat-check">✓</span> Cline</div>
+      <div class="compat-item"><span class="compat-check">✓</span> Continue</div>
+      <div class="compat-item"><span class="compat-check">✓</span> Windsurf</div>
+      <div class="compat-item"><span class="compat-check">✓</span> 任何支持 MCP 的客户端</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== SKILLS ==================== -->
+<section id="skills">
+  <div class="section-inner">
+    <div class="section-head">
+      <h2>开箱即用的能力</h2>
+      <p>API 调用走 MCP，方法论走 Skill，全平台通用。</p>
+    </div>
+    <div class="skills-grid">
+      <a class="skill-card" href="https://github.com/pangolinfo/skills" target="_blank">
+        <div class="skill-icon">🛒</div>
+        <h3>Amazon Scraper</h3>
+        <p>商品详情、关键词搜索、Bestseller、新品榜、品类浏览、卖家商品、变体、评论一站式查询。</p>
+        <span class="skill-tag mcp">MCP Tool</span>
+      </a>
+      <a class="skill-card" href="https://github.com/pangolinfo/skills" target="_blank">
+        <div class="skill-icon">🔍</div>
+        <h3>AI SERP</h3>
+        <p>Google AI Overview、AI Mode 搜索结果实时抓取，洞察 AI 时代的搜索流量分布。</p>
+        <span class="skill-tag mcp">MCP Tool</span>
+      </a>
+      <a class="skill-card" href="https://github.com/pangolinfo/skills" target="_blank">
+        <div class="skill-icon">📜</div>
+        <h3>WIPO 专利查询</h3>
+        <p>全球专利数据库实时检索，识别专利风险、规避侵权、辅助产品开发决策。</p>
+        <span class="skill-tag mcp">MCP Tool</span>
+      </a>
+      <a class="skill-card" href="https://github.com/pangolinfo/skills" target="_blank">
+        <div class="skill-icon">🎯</div>
+        <h3>Amazon 选品方法论</h3>
+        <p>从蓝海发现到竞品分析到利润测算，完整选品工作流，让 AI 像资深运营一样思考。</p>
+        <span class="skill-tag skill">Skill</span>
+      </a>
+      <a class="skill-card" href="https://github.com/pangolinfo/skills" target="_blank">
+        <div class="skill-icon">📊</div>
+        <h3>每日竞品雷达</h3>
+        <p>自动监控竞品价格、Listing 变动、评论新增，第一时间感知市场动向。</p>
+        <span class="skill-tag skill">Skill</span>
+      </a>
+      <a class="skill-card" href="https://github.com/pangolinfo/skills" target="_blank">
+        <div class="skill-icon">✨</div>
+        <h3>Listing 优化</h3>
+        <p>基于关键词与竞品分析，自动生成符合 A9 算法的高转化 Listing 内容。</p>
+        <span class="skill-tag skill">Skill</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== PROOF ==================== -->
+<section class="proof" id="docs">
+  <div class="section-inner">
+    <div class="section-head">
+      <h2>真实开发者在用</h2>
+      <p>每一次安装都是真实使用，每一颗星都是用户的回馈。</p>
+    </div>
+    <div class="proof-stats">
+      <div class="stat">
+        <div class="stat-num">12,847</div>
+        <div class="stat-label">累计安装</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">1,247</div>
+        <div class="stat-label">GitHub Stars</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">6</div>
+        <div class="stat-label">官方 Skills</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">99.9%</div>
+        <div class="stat-label">API 可用性</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FINAL CTA ==================== -->
+<section class="final-cta">
+  <h2>现在就让你的 AI 更聪明</h2>
+  <p>复制下面这行，粘贴到终端，回车。30 秒后你的 AI Agent 就拥有了全套电商数据能力。</p>
+
+  <div class="install-wrap">
+    <div class="install-box">
+      <span class="install-prompt">$</span>
+      <div class="install-cmd">
+        <span class="keyword">curl</span> -fsSL <span class="string">pangolinfo.dev/install</span> | <span class="keyword">sh</span>
+      </div>
+      <button class="copy-btn" onclick="copyInstall(this)">
+        <span>复制</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="hero-ctas" style="margin-top: 32px;">
+    <a class="btn btn-primary" href="https://github.com/pangolinfo/skills" target="_blank">
+      ⭐ Star on GitHub
+    </a>
+    <a class="btn btn-ghost" href="https://github.com/pangolinfo/skills#安装" target="_blank">
+      查看其他安装方式
+    </a>
+  </div>
+
+  <p class="heart-line">由小团队用心打造 🙏 · 你的 Star 是我们继续的动力</p>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+  © 2026 Pangolinfo · <a href="https://github.com/pangolinfo/skills" target="_blank">GitHub</a> · <a href="https://www.pangolinfo.com/zh/" target="_blank">官网</a>
+</footer>
+
+<!-- Toast -->
+<div class="toast" id="toast">✓ 已复制到剪贴板</div>
+
+<script>
+  function copyInstall(btn) {
+    const cmd = 'curl -fsSL pangolinfo.dev/install | sh';
+    navigator.clipboard.writeText(cmd).then(() => {
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      btn.classList.add('copied');
+      const textSpan = btn.querySelector('span');
+      const originalText = textSpan.textContent;
+      textSpan.textContent = '✓ 已复制';
+      setTimeout(() => {
+        toast.classList.remove('show');
+        btn.classList.remove('copied');
+        textSpan.textContent = originalText;
+      }, 1800);
+    });
+  }
+
+  // 模拟实时拉取 GitHub Star 数（生产环境换成 GitHub API）
+  // fetch('https://api.github.com/repos/pangolinfo/skills')
+  //   .then(r => r.json())
+  //   .then(d => {
+  //     document.getElementById('star-count').textContent = (d.stargazers_count / 1000).toFixed(1) + 'k';
+  //   });
+</script>
+
+</body>
+</html>

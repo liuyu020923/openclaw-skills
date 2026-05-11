@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>触点 5 · 延迟引导</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f7f8fa;
+    --bg-term: #0d1117;
+    --border: #e6e8ec;
+    --text: #0a0a0a;
+    --text-soft: #5a5f6a;
+    --text-mute: #8a8f99;
+    --brand: #ff5b1f;
+    --brand-soft: #fff1ea;
+    --brand-dark: #e04a10;
+    --term-text: #e6edf3;
+    --term-dim: #7d8590;
+    --term-green: #3fb950;
+    --term-blue: #58a6ff;
+    --term-yellow: #d29922;
+    --term-purple: #bc8cff;
+    --term-orange: #ff7b3a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text); background: var(--bg-page);
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: none; }
+  .top-bar {
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 600; color: var(--text-soft);
+  }
+  .back-link:hover { color: var(--text); }
+  .touch-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 12px; border-radius: 999px;
+    background: var(--brand-soft); color: var(--brand-dark);
+    font-size: 12px; font-weight: 700;
+  }
+  .container { max-width: 1000px; margin: 0 auto; padding: 48px 24px; }
+  h1 {
+    font-size: 32px; font-weight: 800; letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  .subtitle { color: var(--text-soft); font-size: 16px; margin-bottom: 32px; }
+  .terminal {
+    background: var(--bg-term); border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(10,10,10,0.25), 0 10px 30px rgba(10,10,10,0.15);
+    margin-bottom: 36px;
+  }
+  .term-header {
+    background: #161b22; padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid #21262d;
+  }
+  .term-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .term-dot.red { background: #ff5f57; }
+  .term-dot.yellow { background: #febc2e; }
+  .term-dot.green { background: #28c840; }
+  .term-title {
+    margin-left: 12px; color: var(--term-dim);
+    font-size: 13px; font-family: 'JetBrains Mono', monospace;
+  }
+  .term-body {
+    padding: 22px 24px 26px;
+    font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+    font-size: 13.5px; line-height: 1.8;
+    color: var(--term-text); min-height: 540px;
+  }
+  .dim { color: var(--term-dim); }
+  .blue { color: var(--term-blue); }
+  .green { color: var(--term-green); }
+  .yellow { color: var(--term-yellow); }
+  .orange { color: var(--term-orange); }
+  .purple { color: var(--term-purple); }
+  .bold { font-weight: 700; }
+  .star-y { color: #f1c40f; }
+  .replay-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 10px;
+    background: var(--text); color: white;
+    border: none; cursor: pointer;
+    font-size: 14px; font-weight: 600; font-family: inherit;
+  }
+  .replay-btn:hover { background: #1f1f1f; }
+
+  .insight {
+    margin-top: 36px; background: white;
+    border: 1px solid var(--border); border-radius: 16px;
+    padding: 28px;
+  }
+  .insight h3 {
+    font-size: 17px; font-weight: 700; margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .insight h3::before { content: '💡'; font-size: 18px; }
+  .insight-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+  }
+  .insight-item {
+    padding: 16px; background: var(--bg-page);
+    border-radius: 12px; border-left: 3px solid var(--brand);
+  }
+  .insight-item strong {
+    display: block; font-size: 13px; font-weight: 700;
+    color: var(--text); margin-bottom: 4px;
+  }
+  .insight-item span {
+    font-size: 13px; color: var(--text-soft); line-height: 1.5;
+  }
+  .nav-prev-next {
+    display: flex; justify-content: space-between;
+    margin-top: 40px; gap: 16px;
+  }
+  .nav-btn {
+    flex: 1; padding: 16px 20px;
+    background: white; border: 1px solid var(--border);
+    border-radius: 12px; transition: all 0.15s ease;
+  }
+  .nav-btn:hover { border-color: var(--brand); transform: translateY(-2px); }
+  .nav-btn-label {
+    font-size: 11px; color: var(--text-mute);
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  }
+  .nav-btn-title { font-size: 15px; font-weight: 700; margin-top: 4px; }
+  .nav-btn.next { text-align: right; }
+
+  .timeline {
+    display: flex; justify-content: space-around; align-items: center;
+    margin: 20px 0 28px;
+    padding: 16px 12px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+  }
+  .tl-step { text-align: center; flex: 1; position: relative; }
+  .tl-step::after {
+    content: ''; position: absolute; top: 18px; right: -50%;
+    width: 100%; height: 2px; background: var(--border);
+    z-index: 0;
+  }
+  .tl-step:last-child::after { display: none; }
+  .tl-circle {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--bg-page); border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 6px; font-weight: 700; font-size: 13px;
+    color: var(--text-mute);
+    position: relative; z-index: 1;
+  }
+  .tl-step.active .tl-circle {
+    background: var(--brand); border-color: var(--brand); color: white;
+    box-shadow: 0 0 0 6px var(--brand-soft);
+  }
+  .tl-label { font-size: 11px; color: var(--text-mute); font-weight: 600; }
+  .tl-step.active .tl-label { color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a class="back-link" href="tour.html">← 返回总览</a>
+  <span class="touch-tag">触点 5 · 使用 10 次后延迟引导</span>
+</div>
+
+<div class="container">
+  <h1>用户已经获得价值之后再请求</h1>
+  <p class="subtitle">心理学上转化率最高的时机：用户从产品获得 10 次价值后，"该回报一下"的感觉最强烈。</p>
+
+  <div class="timeline">
+    <div class="tl-step"><div class="tl-circle">1</div><div class="tl-label">第 1 次使用</div></div>
+    <div class="tl-step"><div class="tl-circle">3</div><div class="tl-label">第 3 次</div></div>
+    <div class="tl-step"><div class="tl-circle">5</div><div class="tl-label">第 5 次</div></div>
+    <div class="tl-step"><div class="tl-circle">8</div><div class="tl-label">第 8 次</div></div>
+    <div class="tl-step active"><div class="tl-circle">10</div><div class="tl-label">弹出提示 ✓</div></div>
+  </div>
+
+  <div class="terminal">
+    <div class="term-header">
+      <div class="term-dot red"></div>
+      <div class="term-dot yellow"></div>
+      <div class="term-dot green"></div>
+      <span class="term-title">~ — pangolinfo (used 10 times)</span>
+    </div>
+    <div class="term-body" id="term-body"></div>
+  </div>
+
+  <button class="replay-btn" onclick="playScene()">↻ 重新播放</button>
+
+  <div class="insight">
+    <h3>这一屏的引导设计</h3>
+    <div class="insight-grid">
+      <div class="insight-item">
+        <strong>10 次是甜蜜点</strong>
+        <span>低于 5 次价值未建立，高于 20 次提示太晚——开源界默认惯例</span>
+      </div>
+      <div class="insight-item">
+        <strong>"已为你节省 4.2 小时"</strong>
+        <span>把抽象价值量化，让用户感受到具体收益，强化回报心理</span>
+      </div>
+      <div class="insight-item">
+        <strong>提示在命令输出之后</strong>
+        <span>不打断正常用户体验，先给结果再请求</span>
+      </div>
+      <div class="insight-item">
+        <strong>"今后不再提示" 选项</strong>
+        <span>给用户控制感，避免反感。一次性引导，不骚扰</span>
+      </div>
+      <div class="insight-item">
+        <strong>pangolinfo star 命令</strong>
+        <span>用户随时可主动 Star（哪怕错过了 10 次提示），命令本身可被搜索</span>
+      </div>
+      <div class="insight-item">
+        <strong>显示当前 Star 数</strong>
+        <span>社会证明实时露出，"已经 1247 人 Star 了"促使从众</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-prev-next">
+    <a class="nav-btn" href="touch4-success.html">
+      <div class="nav-btn-label">← 上一步</div>
+      <div class="nav-btn-title">触点 4 · 安装完成</div>
+    </a>
+    <a class="nav-btn next" href="tour.html">
+      <div class="nav-btn-label">完成 →</div>
+      <div class="nav-btn-title">返回总览</div>
+    </a>
+  </div>
+</div>
+
+<script>
+  const term = document.getElementById('term-body');
+
+  const lines = [
+    { t: 0,    html: '<span class="green">$</span> pangolinfo search "wireless mouse" --site amz_us' },
+    { t: 400,  html: '' },
+    { t: 600,  html: '<span class="dim">Searching Amazon US...</span>' },
+    { t: 1000, html: '' },
+    { t: 1200, html: '<span class="bold">Top 5 results:</span>' },
+    { t: 1400, html: '  <span class="green">1.</span> Logitech MX Master 3S          <span class="yellow">$99.99</span>  <span class="dim">★ 4.7 (12k)</span>' },
+    { t: 1500, html: '  <span class="green">2.</span> Apple Magic Mouse              <span class="yellow">$79.00</span>  <span class="dim">★ 4.5 (8.2k)</span>' },
+    { t: 1600, html: '  <span class="green">3.</span> Razer Pro Click Mini           <span class="yellow">$99.99</span>  <span class="dim">★ 4.4 (2.1k)</span>' },
+    { t: 1700, html: '  <span class="green">4.</span> Microsoft Surface Mouse        <span class="yellow">$49.99</span>  <span class="dim">★ 4.6 (5.3k)</span>' },
+    { t: 1800, html: '  <span class="green">5.</span> Anker Wireless Mouse           <span class="yellow">$19.99</span>  <span class="dim">★ 4.4 (18k)</span>' },
+    { t: 2200, html: '' },
+    { t: 2400, html: '<span class="dim">  ─────────────────────────────────────────────────────</span>' },
+    { t: 2700, html: '' },
+    { t: 2900, html: '  <span class="star-y bold">⭐  You\'ve used pangolinfo 10 times</span> <span class="dim">— thank you!</span>' },
+    { t: 3200, html: '' },
+    { t: 3400, html: '  <span class="dim">We\'ve saved you an estimated</span> <span class="bold">4.2 hours</span> <span class="dim">of manual work.</span>' },
+    { t: 3700, html: '  <span class="dim">If you\'d like to support us:</span>' },
+    { t: 4000, html: '' },
+    { t: 4200, html: '      <span class="blue">→ https://github.com/pangolinfo/skills</span>  <span class="star-y">★ 1,247</span>' },
+    { t: 4500, html: '' },
+    { t: 4700, html: '  <span class="dim">(Run </span><span class="purple">pangolinfo star</span><span class="dim"> anytime · </span><span class="purple">pangolinfo --no-tips</span><span class="dim"> to disable)</span>' },
+    { t: 5000, html: '  <span class="dim">─────────────────────────────────────────────────────</span>' },
+    { t: 5200, html: '' },
+    { t: 5400, html: '<span class="green">$</span> <span style="display:inline-block;width:8px;height:16px;background:#e6edf3;vertical-align:text-bottom;animation:blink 1s steps(2) infinite;"></span>' },
+  ];
+
+  function playScene() {
+    term.innerHTML = '';
+    lines.forEach(({ t, html }) => {
+      setTimeout(() => {
+        const div = document.createElement('div');
+        div.innerHTML = html || '&nbsp;';
+        term.appendChild(div);
+      }, t);
+    });
+  }
+  playScene();
+</script>
+
+</body>
+</html>

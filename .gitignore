@@ -1,0 +1,14 @@
+# Python build artifacts
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS metadata that leaks into zip uploads
+.DS_Store
+__MACOSX/
+._*
+
+# Local skill zips and build output
+*.zip
+build/
+dist/
