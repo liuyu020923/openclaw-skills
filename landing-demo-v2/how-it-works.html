@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>原理详解 · Pangolinfo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-page: #f7f8fa;
+    --bg-code: #0d1117;
+    --border: #e6e8ec;
+    --text: #0a0a0a;
+    --text-soft: #5a5f6a;
+    --text-mute: #8a8f99;
+    --brand: #ff5b1f;
+    --brand-soft: #fff1ea;
+    --brand-dark: #e04a10;
+    --mcp: #0969da;
+    --mcp-soft: #ddf4ff;
+    --skill: #6f42c1;
+    --skill-soft: #f4f0ff;
+    --script: #1f7f3a;
+    --script-soft: #e6f7ed;
+    --green: #1f7f3a;
+    --green-soft: #e6f7ed;
+    --red: #cf222e;
+    --red-soft: #ffebe9;
+    --yellow: #9a6700;
+    --yellow-soft: #fff8c5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text); background: var(--bg-page);
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: none; }
+  code { font-family: 'JetBrains Mono', monospace; }
+
+  /* ---- Top bar ---- */
+  .top-bar {
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 600; color: var(--text-soft);
+  }
+  .back-link:hover { color: var(--text); }
+  .touch-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 12px; border-radius: 999px;
+    background: var(--brand-soft); color: var(--brand-dark);
+    font-size: 12px; font-weight: 700;
+  }
+
+  /* ---- Hero ---- */
+  .hero-wrap {
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 56px 24px 44px; text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px;
+    background: var(--brand-soft); color: var(--brand-dark);
+    font-size: 13px; font-weight: 700;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-size: clamp(30px, 4vw, 44px);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.15; margin-bottom: 14px;
+  }
+  .subtitle {
+    color: var(--text-soft); font-size: 17px;
+    max-width: 700px; margin: 0 auto;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 56px 24px; }
+
+  /* ---- Section header ---- */
+  .section-head {
+    margin-bottom: 28px;
+  }
+  .section-head h2 {
+    font-size: 26px; font-weight: 800;
+    letter-spacing: -0.02em; margin-bottom: 8px;
+  }
+  .section-head .sub {
+    color: var(--text-soft); font-size: 15px;
+  }
+
+  /* ---- Three roles ---- */
+  .roles-intro {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 48px;
+    text-align: center;
+  }
+  .roles-intro p {
+    font-size: 16px; color: var(--text);
+    line-height: 1.7;
+  }
+  .roles-intro .pill {
+    display: inline-block;
+    padding: 3px 10px; border-radius: 6px;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .roles-intro .pill.script { background: var(--script-soft); color: var(--script); }
+  .roles-intro .pill.skill { background: var(--skill-soft); color: var(--skill); }
+  .roles-intro .pill.mcp { background: var(--mcp-soft); color: var(--mcp); }
+
+  /* ---- Role card ---- */
+  .role-card {
+    background: white;
+    border-radius: 20px;
+    padding: 36px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 16px rgba(10,10,10,0.04);
+    border: 1px solid var(--border);
+    border-top-width: 5px;
+  }
+  .role-card.script { border-top-color: var(--script); }
+  .role-card.skill { border-top-color: var(--skill); }
+  .role-card.mcp { border-top-color: var(--mcp); }
+
+  .role-head {
+    display: flex; align-items: flex-start; gap: 20px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .role-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+  }
+  .role-card.script .role-icon { background: var(--script-soft); }
+  .role-card.skill .role-icon { background: var(--skill-soft); }
+  .role-card.mcp .role-icon { background: var(--mcp-soft); }
+
+  .role-meta {
+    flex: 1; min-width: 200px;
+  }
+  .role-tag {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: 6px;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+  .role-card.script .role-tag { background: var(--script); color: white; }
+  .role-card.skill .role-tag { background: var(--skill); color: white; }
+  .role-card.mcp .role-tag { background: var(--mcp); color: white; }
+  .role-title {
+    font-size: 24px; font-weight: 800; letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  .role-oneliner {
+    font-size: 16px; color: var(--text-soft);
+    line-height: 1.5;
+  }
+
+  /* role body grid */
+  .role-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 720px) { .role-grid { grid-template-columns: 1fr; } }
+
+  .role-block {
+    background: var(--bg-page);
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .role-block h4 {
+    font-size: 12px; font-weight: 700;
+    color: var(--text-mute);
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 12px;
+  }
+  .role-block ul { list-style: none; padding: 0; }
+  .role-block li {
+    padding: 8px 0 8px 22px;
+    position: relative;
+    font-size: 14px; color: var(--text);
+    line-height: 1.55;
+    border-bottom: 1px dashed rgba(0,0,0,0.05);
+  }
+  .role-block li:last-child { border-bottom: none; }
+  .role-block li::before {
+    content: '✓';
+    position: absolute; left: 0; top: 8px;
+    font-weight: 700;
+  }
+  .role-card.script .role-block li::before { color: var(--script); }
+  .role-card.skill .role-block li::before { color: var(--skill); }
+  .role-card.mcp .role-block li::before { color: var(--mcp); }
+  .role-block li code {
+    background: white;
+    padding: 1px 6px; border-radius: 4px;
+    font-size: 12.5px;
+    border: 1px solid var(--border);
+  }
+  .role-block li strong { font-weight: 700; }
+
+  /* Without vs With */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  @media (max-width: 720px) { .compare { grid-template-columns: 1fr; } }
+  .compare-col {
+    padding: 18px;
+    border-radius: 10px;
+  }
+  .compare-col.bad {
+    background: var(--red-soft);
+    border-left: 3px solid var(--red);
+  }
+  .compare-col.good {
+    background: var(--green-soft);
+    border-left: 3px solid var(--green);
+  }
+  .compare-col h5 {
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .compare-col.bad h5 { color: var(--red); }
+  .compare-col.good h5 { color: var(--green); }
+  .compare-col p {
+    font-size: 14px; color: var(--text);
+    line-height: 1.6;
+  }
+  .compare-col p strong { font-weight: 700; }
+  .compare-col code {
+    background: white;
+    padding: 1px 5px; border-radius: 4px;
+    font-size: 12.5px;
+    border: 1px solid rgba(0,0,0,0.05);
+  }
+
+  /* Code example */
+  .code-demo {
+    background: var(--bg-code);
+    color: #e6edf3;
+    border-radius: 12px;
+    padding: 22px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.8;
+    overflow-x: auto;
+  }
+  .code-demo .dim { color: #7d8590; }
+  .code-demo .blue { color: #79c0ff; }
+  .code-demo .green { color: #3fb950; }
+  .code-demo .yellow { color: #d29922; }
+  .code-demo .purple { color: #bc8cff; }
+  .code-demo .orange { color: #ff7b3a; }
+  .code-demo .bold { font-weight: 700; }
+
+  /* User journey */
+  .journey {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    margin-bottom: 48px;
+  }
+  .journey h3 {
+    font-size: 22px; font-weight: 800;
+    letter-spacing: -0.01em; margin-bottom: 6px;
+  }
+  .journey .sub {
+    color: var(--text-soft); font-size: 15px;
+    margin-bottom: 28px;
+  }
+  .journey-flow {
+    display: flex; flex-direction: column;
+    gap: 16px;
+  }
+  .step-bubble {
+    display: flex; gap: 16px;
+    align-items: flex-start;
+  }
+  .step-bubble-num {
+    width: 32px; height: 32px; border-radius: 10px;
+    background: var(--brand);
+    color: white; font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 14px;
+  }
+  .step-bubble-content {
+    flex: 1;
+    background: var(--bg-page);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+  .step-bubble-content strong {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+    font-size: 15px;
+  }
+  .step-bubble-content .pill {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 5px;
+    font-size: 11px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.05em;
+    margin-right: 6px;
+  }
+  .step-bubble-content .pill.script { background: var(--script-soft); color: var(--script); }
+  .step-bubble-content .pill.skill { background: var(--skill-soft); color: var(--skill); }
+  .step-bubble-content .pill.mcp { background: var(--mcp-soft); color: var(--mcp); }
+  .step-bubble-content .pill.user { background: var(--brand-soft); color: var(--brand-dark); }
+  .step-bubble-content p {
+    font-size: 14px; color: var(--text-soft);
+    margin-top: 6px;
+    line-height: 1.55;
+  }
+  .step-bubble-content code {
+    background: white;
+    padding: 1px 6px; border-radius: 4px;
+    font-size: 12.5px;
+    border: 1px solid var(--border);
+  }
+
+  /* FAQ */
+  .faq-section {
+    margin-bottom: 48px;
+  }
+  .faq-item {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 26px;
+    margin-bottom: 12px;
+  }
+  .faq-q {
+    font-size: 15px; font-weight: 700;
+    margin-bottom: 10px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .faq-q::before {
+    content: 'Q'; flex-shrink: 0;
+    width: 22px; height: 22px; border-radius: 6px;
+    background: var(--brand); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 800;
+  }
+  .faq-a {
+    font-size: 14px; color: var(--text-soft);
+    line-height: 1.7;
+    padding-left: 32px;
+  }
+  .faq-a strong { color: var(--text); font-weight: 700; }
+  .faq-a code {
+    background: var(--bg-page);
+    padding: 1px 6px; border-radius: 4px;
+    font-size: 12.5px;
+  }
+
+  /* footer nav */
+  .footer-nav {
+    display: flex; justify-content: space-between; gap: 16px;
+    margin-top: 40px;
+  }
+  .nav-btn {
+    flex: 1; padding: 16px 20px;
+    background: white; border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.15s ease;
+  }
+  .nav-btn:hover { border-color: var(--brand); transform: translateY(-2px); }
+  .nav-btn-label {
+    font-size: 11px; color: var(--text-mute);
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  }
+  .nav-btn-title { font-size: 15px; font-weight: 700; margin-top: 4px; }
+  .nav-btn.next { text-align: right; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a class="back-link" href="index.html">← 返回首页</a>
+  <span class="touch-tag">原理详解 · 三者各做什么</span>
+</div>
+
+<div class="hero-wrap">
+  <div class="hero-badge">📖 用最简单的话讲清楚</div>
+  <h1>它到底是怎么工作的？</h1>
+  <p class="subtitle">
+    可以把 Pangolinfo 想象成给 AI 装一个 App。<br>
+    <strong>这个 App 由三个部分组成</strong>——就像一份外卖、一本说明书、一个工具箱。<br>
+    看完这页你就知道：用户花的 30 秒，到底买到了什么。
+  </p>
+</div>
+
+<div class="container">
+
+  <!-- ======== Intro ======== -->
+  <div class="roles-intro">
+    <p>
+      想让 AI 变成电商专家，需要 <strong>3 个东西配合工作</strong>：<br><br>
+      <span class="pill script">🚚 安装小助手</span> 负责<strong>"送货上门"</strong>——把下面两样自动放好 &nbsp;·&nbsp;
+      <span class="pill skill">📘 经验手册</span> 负责<strong>"教 AI 怎么想"</strong>——10 年运营经验 &nbsp;·&nbsp;
+      <span class="pill mcp">🧰 工具箱</span> 负责<strong>"让 AI 能查数据"</strong>——一键拿到 Amazon 真实数据
+    </p>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- ROLE 1: SCRIPT -->
+  <!-- ============================================== -->
+
+  <div class="section-head">
+    <h2>🚚 第 1 件东西：安装小助手</h2>
+    <p class="sub">把它想象成<strong>"App Store 一键安装"按钮背后的搬运工人"</strong>——用户按一下，它把所有东西自动放好</p>
+  </div>
+
+  <div class="role-card script">
+    <div class="role-head">
+      <div class="role-icon">🚚</div>
+      <div class="role-meta">
+        <div class="role-tag">安装小助手</div>
+        <div class="role-title">让用户 30 秒装好的"搬运工人"</div>
+        <div class="role-oneliner">用户只做 2 件事：<strong>① 复制一行命令</strong>，<strong>② 选自己用哪个 AI 助手</strong>。剩下全是它干的。</div>
+      </div>
+    </div>
+
+    <div class="role-grid">
+      <div class="role-block">
+        <h4>它默默帮用户做了什么</h4>
+        <ul>
+          <li>认出用户的电脑是 Mac、Windows 还是 Linux</li>
+          <li>弹个菜单：<strong>"你用哪个 AI 助手？"</strong>（9 个常见选项）</li>
+          <li>把"<strong>经验手册</strong>"放进 AI 能读到的位置</li>
+          <li>把"<strong>工具箱</strong>"装好，告诉 AI 怎么用</li>
+          <li>问："<strong>你有 Pangolinfo 账号吗？</strong>"——没有的话进入下一步</li>
+          <li>请用户<strong>留个邮箱</strong>，自动发验证码过去</li>
+          <li>用户输入<strong>验证码 + 想设的密码</strong>，账号就注册好了</li>
+          <li>自动把账号"<strong>会员卡号</strong>"存到电脑里，下次 AI 自动用</li>
+          <li>验证一切正常，告诉用户："好了，重启 AI 就能用"</li>
+        </ul>
+      </div>
+
+      <div class="role-block">
+        <h4>它不做什么（用户可以放心）</h4>
+        <ul>
+          <li><strong>不偷看用户数据</strong>——只往电脑里放东西，不传出去</li>
+          <li><strong>不留后台进程</strong>——装完就关，不占内存</li>
+          <li><strong>代码完全公开</strong>——企业 IT 部门可以审计</li>
+          <li><strong>装完即走</strong>——不弹广告、不催更新、不收集行为</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 style="font-size:12px;font-weight:700;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">没有它的世界 vs 有它的世界</h4>
+    <div class="compare">
+      <div class="compare-col bad">
+        <h5>✗ 没有"安装小助手"</h5>
+        <p>用户得自己<strong>看好几页文档</strong>，找到 AI 助手的安装目录在哪、复制粘贴文件、改一堆配置，<strong>然后开浏览器去官网注册账号、点确认邮件、复制密码回来</strong>……整个流程 <strong>10 多步</strong>，普通用户大概率半途放弃。</p>
+      </div>
+      <div class="compare-col good">
+        <h5>✓ 有"安装小助手"</h5>
+        <p>用户复制一行字，按回车。看到菜单选"<strong>我用 Claude</strong>"，输个邮箱，输个验证码，输个密码。<strong>30 秒，全程在一个窗口里</strong>，连浏览器都不用开。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- ROLE 2: SKILLS -->
+  <!-- ============================================== -->
+
+  <div class="section-head" style="margin-top:64px;">
+    <h2>📘 第 2 件东西：经验手册</h2>
+    <p class="sub">把它想象成<strong>"老员工传给新员工的工作 SOP"</strong>——AI 读完，就知道遇到电商问题该怎么思考</p>
+  </div>
+
+  <div class="role-card skill">
+    <div class="role-head">
+      <div class="role-icon">📘</div>
+      <div class="role-meta">
+        <div class="role-tag">经验手册</div>
+        <div class="role-title">10 年运营经验，AI 一次读完</div>
+        <div class="role-oneliner">AI 模型本身知识全面但<strong>不懂电商业务</strong>。手册就是"<strong>新员工入职培训资料</strong>"——教会 AI 我们公司怎么做事。</div>
+      </div>
+    </div>
+
+    <div class="role-grid">
+      <div class="role-block">
+        <h4>手册里写了什么</h4>
+        <ul>
+          <li><strong>"什么叫蓝海市场？"</strong>——告诉 AI 具体看哪几个数字</li>
+          <li><strong>"选品该怎么一步步分析？"</strong>——5 步标准流程</li>
+          <li><strong>"哪些坑要避开？"</strong>——母婴慎入、3C 先查专利</li>
+          <li><strong>"拿到数据怎么看？"</strong>——告诉 AI 哪些指标最重要</li>
+          <li><strong>"什么时候用哪个工具？"</strong>——AI 知道该查 Amazon 还是查专利</li>
+        </ul>
+      </div>
+
+      <div class="role-block">
+        <h4>为什么手册要"看得懂"</h4>
+        <ul>
+          <li><strong>AI 能读</strong>——文本格式，AI 一目了然</li>
+          <li><strong>用户也能读</strong>——感兴趣的人可以打开看，知道我们方法论是认真的</li>
+          <li><strong>本身是品牌资产</strong>——能被搜索引擎收录，等于免费做内容营销</li>
+          <li><strong>任何 AI 都能用</strong>——不限定特定平台</li>
+          <li><strong>更新方便</strong>——改个文字就行，不用重新发版</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 style="font-size:12px;font-weight:700;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">手册节选 · 长这样（AI 读到的内容）</h4>
+    <div class="code-demo"><span class="dim"># 📘 Amazon 选品方法论</span>
+
+<span class="purple">## 怎么判断这是不是蓝海市场？</span>
+
+满足以下 3 个条件，可以考虑：
+<span class="dim">1.</span> 月销量 &gt; <span class="orange">300</span> 单，但 Top10 的评论数 &lt; <span class="orange">500</span>
+   <span class="dim">→ 有需求，但还没卷起来</span>
+<span class="dim">2.</span> 价格分布有 $20-$50 的中端空间
+   <span class="dim">→ 不会被白牌价格战压死</span>
+<span class="dim">3.</span> 头部品牌占有率 &lt; <span class="orange">40%</span>
+   <span class="dim">→ 还有新卖家上位的空间</span>
+
+<span class="purple">## 选品该这样一步步做</span>
+
+<span class="green">第 1 步</span> 搜关键词，看 Top20 都是什么
+<span class="green">第 2 步</span> 挑前 10 名，逐个看销量和评论数
+<span class="green">第 3 步</span> 抽样看几条 1 星差评，了解痛点
+<span class="green">第 4 步</span> 综合判断有没有机会，给结论
+
+<span class="purple">## ⚠ 这几个坑别踩</span>
+<span class="yellow">·</span> <strong>母婴 / 食品</strong>：合规门槛太高
+<span class="yellow">·</span> <strong>3C 配件</strong>：容易撞专利，先查一下</div>
+
+    <div class="compare" style="margin-top:20px;">
+      <div class="compare-col bad">
+        <h5>✗ 没有"经验手册"</h5>
+        <p>AI 虽然知道怎么查数据，但<strong>不知道为啥要查、什么顺序查</strong>。用户问"帮我选个品"，AI 一脸懵，要么瞎答、要么反问一堆问题。<strong>就像给新员工发了一堆账号但没培训，没法独立干活</strong>。</p>
+      </div>
+      <div class="compare-col good">
+        <h5>✓ 有"经验手册"</h5>
+        <p>用户问"帮我做蓝牙耳机选品"，AI 自动照着手册走 5 步——先搜关键词、再看 Top10、再读差评、再查专利、最后给报告。<strong>从"瞎答"升级到"资深运营级别的回答"</strong>。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- ROLE 3: MCP -->
+  <!-- ============================================== -->
+
+  <div class="section-head" style="margin-top:64px;">
+    <h2>🧰 第 3 件东西：工具箱</h2>
+    <p class="sub">把它想象成<strong>"老员工桌上的一排按钮——按一下就拿到 Amazon 实时数据"</strong>。没有它，AI 只能空谈方法论</p>
+  </div>
+
+  <div class="role-card mcp">
+    <div class="role-head">
+      <div class="role-icon">🧰</div>
+      <div class="role-meta">
+        <div class="role-tag">工具箱</div>
+        <div class="role-title">让 AI 一键拿到实时数据</div>
+        <div class="role-oneliner">手册告诉 AI <strong>"该做什么"</strong>，工具箱让 AI <strong>"能做什么"</strong>——查 Amazon、查 Google、查专利，都是按一下按钮的事。</div>
+      </div>
+    </div>
+
+    <div class="role-grid">
+      <div class="role-block">
+        <h4>工具箱里有哪些"按钮"</h4>
+        <ul>
+          <li>🔍 <strong>搜 Amazon 商品</strong>——输关键词，返回 Top20 列表</li>
+          <li>📦 <strong>查商品详情</strong>——销量、价格、星级、评论数一次给</li>
+          <li>🏆 <strong>看 Bestseller 榜</strong>——某个品类的销冠产品</li>
+          <li>💬 <strong>读用户评论</strong>——抽样真实评论，看痛点</li>
+          <li>🌐 <strong>查 Google AI 搜索</strong>——AI 现在怎么推荐你的品类？</li>
+          <li>⚖️ <strong>查全球专利</strong>——这个产品有专利风险吗？</li>
+        </ul>
+      </div>
+
+      <div class="role-block">
+        <h4>为什么不让 AI 自己查？</h4>
+        <ul>
+          <li><strong>AI 容易"瞎填参数"</strong>——工具箱强制规范，零出错</li>
+          <li><strong>账号 Key 自动隐藏</strong>——AI 看不到，泄漏不了</li>
+          <li><strong>查询失败自动重试</strong>——AI 不用操心错误处理</li>
+          <li><strong>只给 AI 它需要的数据</strong>——省 AI 算钱（Token）</li>
+          <li><strong>所有 AI 都能用同一套工具</strong>——不用为每个 AI 单独适配</li>
+        </ul>
+      </div>
+    </div>
+
+    <h4 style="font-size:12px;font-weight:700;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">用户提问后 AI 是怎么"按按钮"的（实际工作过程）</h4>
+    <div class="code-demo"><span class="dim"># 用户问：帮我做蓝牙耳机选品</span>
+
+<span class="dim"># AI 读完手册，开始按按钮：</span>
+
+<span class="green">▸ 按下"搜 Amazon"按钮</span>
+  <span class="blue">关键词</span>: bluetooth earbuds
+  <span class="blue">国家</span>: 美国
+  <span class="yellow">→ 0.8 秒后</span>: 拿到 Top 20 商品列表
+
+<span class="green">▸ 按下"查商品详情"按钮 × 10 次</span>
+  <span class="yellow">→ 拿到每个商品的销量、价格、评论数</span>
+
+<span class="green">▸ 按下"读评论"按钮</span>
+  <span class="yellow">→ 抽样 50 条差评，分析痛点</span>
+
+<span class="green">▸ 按下"查专利"按钮</span>
+  <span class="yellow">→ 确认主流型号没有专利地雷</span>
+
+<span class="dim"># 综合所有数据，AI 给出最终选品报告</span></div>
+
+    <div class="compare" style="margin-top:20px;">
+      <div class="compare-col bad">
+        <h5>✗ 没有"工具箱"</h5>
+        <p>AI 只能<strong>"听说"</strong>有这些数据，但<strong>没法实时拿</strong>。它可能编个数字、可能用过时信息、可能让用户自己去 Amazon 查。<strong>就像让你不带任何工具去修车——理论懂没用</strong>。</p>
+      </div>
+      <div class="compare-col good">
+        <h5>✓ 有"工具箱"</h5>
+        <p>AI 当场<strong>拿到实时真实数据</strong>，回答里出现的销量、价格、评论数<strong>都是刚刚从 Amazon 查到的</strong>。用户的报告里没有"大约"、"可能"——全是具体数字。<strong>这才是"专家级"回答</strong>。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======== Skills as MCP description extension ======== -->
+  <div class="section-head" style="margin-top:64px;">
+    <h2>🤝 当 Skills 和 MCP 都装上时，Skills 到底干嘛？</h2>
+    <p class="sub">这是个核心问题——既然 MCP 已经能让 AI 调用 API，为什么还需要 Skills？</p>
+  </div>
+
+  <div style="background:linear-gradient(135deg,#f4f0ff 0%,#ddf4ff 100%);border:1px solid #d0c4ec;border-radius:20px;padding:32px;margin-bottom:32px;">
+
+    <div style="background:white;border-radius:14px;padding:24px;margin-bottom:20px;">
+      <div style="font-size:13px;font-weight:700;color:var(--text-mute);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">关键真相</div>
+      <div style="font-size:17px;font-weight:700;line-height:1.6;color:var(--text);">
+        Skills 是 <span style="color:var(--mcp);">MCP 接口说明书的"扩展版"</span>——
+        把 MCP tool description 装不下的<strong>业务知识、字段含义、使用时机</strong>全部写进 Skills。
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div style="background:white;border-radius:12px;padding:20px;border-left:3px solid var(--mcp);">
+        <div style="font-size:13px;font-weight:700;color:var(--mcp);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">🧰 MCP 提供（机器层）</div>
+        <ul style="list-style:none;padding:0;font-size:13.5px;line-height:1.7;color:var(--text);">
+          <li>· 接口的函数签名（参数类型）</li>
+          <li>· 简短一行 description（&lt; 200 字符限制）</li>
+          <li>· 返回 JSON 的字段结构</li>
+          <li>· Schema 强约束 = 调用零拼错</li>
+        </ul>
+      </div>
+      <div style="background:white;border-radius:12px;padding:20px;border-left:3px solid var(--skill);">
+        <div style="font-size:13px;font-weight:700;color:var(--skill);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">📘 Skills 补充（业务层）</div>
+        <ul style="list-style:none;padding:0;font-size:13.5px;line-height:1.7;color:var(--text);">
+          <li>· 这个接口<strong>什么时候该调</strong>用</li>
+          <li>· 返回字段<strong>哪个最关键</strong>（销量？评论数？）</li>
+          <li>· 多个接口的<strong>组合调用顺序</strong></li>
+          <li>· <strong>避坑提示</strong>（哪些品类先查专利）</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-code);color:#e6edf3;padding:20px 24px;border-radius:12px;font-family:'JetBrains Mono',monospace;font-size:13px;line-height:1.8;overflow-x:auto;">
+<span style="color:#7d8590;"># 举个具体例子</span>
+
+<span style="color:#bc8cff;">MCP 工具定义（一行 description）</span>:
+  <span style="color:#79c0ff;">search_amazon</span>(keyword, site) → Top 20 products
+  <span style="color:#7d8590;"># ← 限长 200 字，只能这么写</span>
+
+<span style="color:#bc8cff;">Skills 里关于这个工具的扩展说明</span>:
+  ▸ <span style="color:#3fb950;">"selling_rank 字段是销量排名，越小越好"</span>
+  ▸ <span style="color:#3fb950;">"review_count &lt; 500 + 月销 &gt; 300 = 蓝海信号"</span>
+  ▸ <span style="color:#3fb950;">"site=amz_jp 时，价格单位是日元不是美元"</span>
+  ▸ <span style="color:#3fb950;">"调完 search_amazon 后建议串调 get_reviews"</span>
+  <span style="color:#7d8590;"># ← 几千字业务知识，MCP description 写不下</span></div>
+
+    <div style="margin-top:20px;padding:16px 20px;background:white;border-radius:12px;border-left:4px solid var(--brand);">
+      <div style="font-size:14px;font-weight:700;color:var(--brand-dark);margin-bottom:6px;">💡 所以 Skills + MCP 的真正关系</div>
+      <div style="font-size:13.5px;line-height:1.7;color:var(--text);">
+        MCP 让 AI <strong>能调对接口</strong>（机器层），Skills 让 AI <strong>知道为什么调、怎么解读</strong>（业务层）。
+        <strong>装了 MCP 不装 Skills，AI 是个"会按按钮但不懂业务的实习生"</strong>；
+        <strong>两个都装，才是带着 SOP 的资深运营</strong>。
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ======== Install combinations ======== -->
+  <div class="section-head" style="margin-top:64px;">
+    <h2>🎛️ 这 3 件东西可以单独装也可以组合装</h2>
+    <p class="sub">不强制一次装齐——按需选择，零负担试用</p>
+  </div>
+
+  <div style="background:white;border:1px solid var(--border);border-radius:20px;padding:32px;margin-bottom:48px;">
+
+    <p style="font-size:15px;color:var(--text);line-height:1.7;margin-bottom:24px;">
+      安装小助手是<strong>必装的</strong>（负责搬运），但<strong>"经验手册"和"工具箱"完全可以独立工作</strong>：
+    </p>
+
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <thead>
+          <tr style="background:var(--bg-page);">
+            <th style="padding:14px 16px;text-align:left;border-bottom:2px solid var(--border);font-size:13px;color:var(--text-mute);">用户场景</th>
+            <th style="padding:14px 16px;text-align:center;border-bottom:2px solid var(--border);">📘 只装手册</th>
+            <th style="padding:14px 16px;text-align:center;border-bottom:2px solid var(--border);">🧰 只装工具箱</th>
+            <th style="padding:14px 16px;text-align:center;border-bottom:2px solid var(--border);background:#fff8eb;">✨ 两个都装</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:14px 16px;border-bottom:1px dashed var(--border);font-weight:600;">用户问"什么样的市场算蓝海？"</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);color:var(--green);">✅ 完美回答</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);color:var(--text-mute);">❌ AI 不懂业务</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);background:#fffaf5;color:var(--green);">✅ 完美回答</td>
+          </tr>
+          <tr>
+            <td style="padding:14px 16px;border-bottom:1px dashed var(--border);font-weight:600;">用户问"查一下 B07XYZ 的当前销量"</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);color:var(--yellow);">⚠️ 让用户自己查</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);color:var(--green);">✅ 直接给数据</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);background:#fffaf5;color:var(--green);">✅ 直接给数据</td>
+          </tr>
+          <tr>
+            <td style="padding:14px 16px;border-bottom:1px dashed var(--border);font-weight:600;">用户问"帮我做蓝牙耳机选品报告"</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);color:var(--yellow);">⚠️ 给方法论 + 让用户配合查数据</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);color:var(--yellow);">⚠️ 给数据但分析浅</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);background:#fffaf5;color:var(--green);font-weight:700;">⭐ 一站式完整报告</td>
+          </tr>
+          <tr>
+            <td style="padding:14px 16px;border-bottom:1px dashed var(--border);font-weight:600;">需要 API Key 吗</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);color:var(--text-mute);">需要（AI 调用时用）</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);color:var(--text-mute);">需要（安装时配）</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);background:#fffaf5;color:var(--text-mute);">需要（安装时配）</td>
+          </tr>
+          <tr>
+            <td style="padding:14px 16px;border-bottom:1px dashed var(--border);font-weight:600;">AI 调用 API 的准确率</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);color:var(--yellow);">70-80%（自己拼参数）</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);color:var(--green);">99%+（Schema 强约束）</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);background:#fffaf5;color:var(--green);">99%+</td>
+          </tr>
+          <tr>
+            <td style="padding:14px 16px;border-bottom:1px dashed var(--border);font-weight:600;">有无可执行二进制</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);color:var(--green);">✅ 纯文本</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);color:var(--text-mute);">需要装二进制</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);background:#fffaf5;color:var(--text-mute);">需要装二进制</td>
+          </tr>
+          <tr>
+            <td style="padding:14px 16px;border-bottom:1px dashed var(--border);font-weight:600;">适合什么用户</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);font-size:13px;color:var(--text-soft);">企业 IT 严格<br>网页端用户<br>想读方法论本身</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);font-size:13px;color:var(--text-soft);">开发者 / 二开团队<br>追求调用精准</td>
+            <td style="padding:14px 16px;text-align:center;border-bottom:1px dashed var(--border);background:#fffaf5;font-size:13px;color:var(--text-soft);"><strong>大多数电商运营</strong><br>（推荐默认）</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:24px;padding:18px 22px;background:linear-gradient(135deg,var(--brand-soft) 0%,#fff8eb 100%);border-radius:12px;border-left:4px solid var(--brand);">
+      <div style="font-size:14px;font-weight:700;color:var(--brand-dark);margin-bottom:10px;">💡 我们为什么允许"单装"？</div>
+      <div style="font-size:13.5px;color:var(--text);line-height:1.7;">
+        三种方案<strong>都需要 API Key</strong>——Skills 本质是教 AI 怎么调我们 API 的说明书，最终调用时还是要 Key。<br>
+        分开装的真正意义是<strong>覆盖不同部署场景</strong>：
+      </div>
+      <ul style="margin-top:12px;list-style:none;padding:0;font-size:13.5px;color:var(--text);line-height:1.8;">
+        <li>🛡️ <strong>仅 Skills 是企业友好版</strong>——纯文本无二进制，企业 IT 部门审查零阻力</li>
+        <li>🌐 <strong>仅 Skills 是网页端唯一选择</strong>——Claude.ai Projects / ChatGPT GPTs 装不了 MCP，只能上传 Skills 文件</li>
+        <li>📖 <strong>Skills 本身是知识产品</strong>——用户能读、能学、能引用，相当于免费内容营销</li>
+        <li>🔄 <strong>Skills 能引导 AI 用外部 API</strong>——把 WIPO 等第三方 API 文档放进 Skills，AI 能直接调（兜底场景）</li>
+        <li>⚡ <strong>仅 MCP 是开发者友好版</strong>——只要精准 API 接口，不要"方法论唠叨"</li>
+        <li>✨ <strong>Both 是日常使用最优解</strong>——既懂业务又能办事</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <!-- ======== End-to-end journey ======== -->
+  <div class="journey">
+    <h3>🎬 一个真实故事：小张的下午茶时间</h3>
+    <p class="sub">跟着小张走一遍，看看这 3 件东西是怎么联手干活的</p>
+
+    <div class="journey-flow">
+
+      <div class="step-bubble">
+        <div class="step-bubble-num">1</div>
+        <div class="step-bubble-content">
+          <span class="pill user">下午 2:00</span>
+          <strong>小张：一个想开 Amazon 店的卖家，电脑上装了 Claude（AI 助手）</strong>
+          <p>他在小红书看到我们 Pangolinfo 的推荐——"装上之后 AI 就能帮你做选品"。心动了，决定试试。</p>
+        </div>
+      </div>
+
+      <div class="step-bubble">
+        <div class="step-bubble-num">2</div>
+        <div class="step-bubble-content">
+          <span class="pill user">下午 2:01</span>
+          <strong>小张：打开终端，粘贴官网那行命令，按回车</strong>
+          <p>命令长得有点吓人，但他就只做了"复制粘贴回车"三件事。</p>
+        </div>
+      </div>
+
+      <div class="step-bubble">
+        <div class="step-bubble-num">3</div>
+        <div class="step-bubble-content">
+          <span class="pill script">2:01-2:01:30</span>
+          <strong>🚚 安装小助手开始干活：</strong>
+          <p>"你用哪个 AI 助手？" → 小张选了 <strong>Claude</strong><br>
+          → 小助手把"<strong>经验手册</strong>"和"<strong>工具箱</strong>"放到 Claude 能找到的地方<br>
+          → "你有 Pangolinfo 账号吗？" → 小张：没有<br>
+          → "留个邮箱" → 小张输了邮箱<br>
+          → "验证码发到你邮箱了，输一下" → 小张瞟一眼邮箱，输入 6 位数字<br>
+          → "设个密码" → 小张输密码<br>
+          → "好了，账号开好了，重启 Claude 就能用"</p>
+        </div>
+      </div>
+
+      <div class="step-bubble">
+        <div class="step-bubble-num">4</div>
+        <div class="step-bubble-content">
+          <span class="pill user">下午 2:02</span>
+          <strong>小张：重启 Claude，在对话框里打字</strong>
+          <p>"帮我看看蓝牙耳机这个品类怎么样，我想做这个"</p>
+        </div>
+      </div>
+
+      <div class="step-bubble">
+        <div class="step-bubble-num">5</div>
+        <div class="step-bubble-content">
+          <span class="pill skill">2:02 起 · AI 默默工作</span>
+          <strong>📘 AI 先翻"经验手册"：</strong>
+          <p>"哦，用户要做选品分析。手册说应该按 5 步走——先搜关键词、再看 Top10、再读差评、再查专利、最后给报告。"<br>
+          <strong>AI 现在知道"该怎么做"了</strong>。</p>
+        </div>
+      </div>
+
+      <div class="step-bubble">
+        <div class="step-bubble-num">6</div>
+        <div class="step-bubble-content">
+          <span class="pill mcp">2:02-2:02:30</span>
+          <strong>🧰 AI 开始按"工具箱"上的按钮：</strong>
+          <p>🔍 按"搜 Amazon" → 拿到蓝牙耳机 Top 20<br>
+          📦 按"查详情"× 10 → 拿到销量、价格、评论数<br>
+          💬 按"读评论" → 抽样 50 条差评分析<br>
+          ⚖️ 按"查专利" → 主流型号没有专利地雷<br>
+          <strong>AI 在 30 秒内拿到了真实最新数据</strong>。</p>
+        </div>
+      </div>
+
+      <div class="step-bubble">
+        <div class="step-bubble-num">7</div>
+        <div class="step-bubble-content">
+          <span class="pill user">下午 2:03</span>
+          <strong>🎉 小张拿到一份完整选品报告：</strong>
+          <p>"蓝牙耳机当前 Top10 月销 1200 单，但<strong>评论数集中在 500 以下</strong>，<strong>说明竞争还没卷起来</strong>；<br>
+          差评集中在'连接不稳''续航虚标'两个痛点；<br>
+          $20-$50 价格带有空间；<br>
+          推荐：主打"长续航 + 稳定连接"卖点，避开品牌大厂正面竞争。"<br><br>
+          <strong>从打开终端到拿到报告，全程 3 分钟</strong>。小张从来没接触过任何代码、配置、参数。</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======== FAQ ======== -->
+  <div class="section-head">
+    <h2>老板可能会问的问题</h2>
+    <p class="sub">汇报时这几个问题大概率会被追问，提前备好答案</p>
+  </div>
+
+  <div class="faq-section">
+
+    <div class="faq-item">
+      <div class="faq-q">为什么需要 3 样东西？只做 1 样不行吗？</div>
+      <div class="faq-a">
+        <strong>三样东西各管一段，少了任何一个用户体验都崩</strong>。<br><br>
+        🚚 <strong>只有"安装小助手"</strong>——没有手册和工具箱，等于"快递只送了空盒子"，啥也用不了<br>
+        📘 <strong>只有"经验手册"</strong>——AI 知道该怎么做但没有数据可查，等于"老师傅给你讲了流程但没给你工具"<br>
+        🧰 <strong>只有"工具箱"</strong>——有数据没思路，AI 不知道怎么用，等于"给你 Amazon 后台密码但没人教你怎么用"<br><br>
+        <strong>三个加起来才是完整产品</strong>：装得上 + 想得通 + 拿得到。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">"经验手册"是文本文件，会被竞争对手抄走吗？</div>
+      <div class="faq-a">
+        <strong>会被抄，但这反而是好事</strong>。<br><br>
+        手册公开放着，越多人看、越多人引用，<strong>搜索引擎越收录我们的方法论</strong>——这本身就是免费的内容营销。<br>
+        而且对手就算抄走手册，<strong>还是得用我们的"工具箱"才能拿到真实数据</strong>。手册带流量到 API，API 才是真正的护城河。<br><br>
+        把它想象成肯德基把炸鸡配方公开——表面上谁都能学，但<strong>原料供应链和门店运营才是真本事</strong>，没法抄。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">"工具箱"装在用户电脑上，会不会占资源？</div>
+      <div class="faq-a">
+        几乎不占。<br><br>
+        工具箱<strong>只有 AI 调用它时才会启动</strong>，平时安安静静待着，<strong>占用约 20MB 内存</strong>（相当于一个浏览器标签页的零头）。<br>
+        它本质上是个<strong>"转接员"</strong>——AI 说"我要查这个商品"，它就帮 AI 去我们云端查，把结果传回 AI。<strong>真正的数据计算都在我们云端</strong>，用户电脑只是过个手。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">在终端里输密码，用户会不会觉得不安全？</div>
+      <div class="faq-a">
+        <strong>这是程序员圈子里 30 年的标准做法</strong>——Git、SSH、各种系统密码都这么输。<br><br>
+        用户输入时<strong>屏幕不显示密码字符</strong>（就像 ATM 取钱），输完<strong>直接加密传输到我们服务器</strong>，不写电脑硬盘、不留任何痕迹。<br><br>
+        相比之下，"<strong>让用户跳浏览器注册</strong>"反而问题大：<br>
+        · 用户要切窗口、点确认邮件、复制密码回来——<strong>每一步都可能流失</strong><br>
+        · 行业数据显示，浏览器流程的注册完成率<strong>比终端流程低 40%</strong><br><br>
+        在终端里完成注册<strong>对用户更友好、对我们转化更高</strong>。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">如果用户收不到验证码邮件呢？</div>
+      <div class="faq-a">
+        给用户 <strong>3 条退路</strong>，不会卡死：<br><br>
+        <strong>① 再发一次</strong>——输入 "重发" 重新发送（有防滥用频率限制）<br>
+        <strong>② 换个邮箱</strong>——输入"换邮箱"重新填一个<br>
+        <strong>③ 用浏览器</strong>——输入"用浏览器"，自动打开官网注册页，复制账号回终端继续<br><br>
+        总有一条路能走通。<strong>用户不会因为收不到邮件就放弃</strong>。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">我们数据库不全的领域（比如冷门专利），Skills 能"救场"吗？</div>
+      <div class="faq-a">
+        <strong>能部分救场，但不是主力方案</strong>。<br><br>
+        当用户查的关键词在我们 ES 数据库里匹配不到完整结果时，Skills 可以引导 AI 做<strong>两种降级</strong>：<br><br>
+        <strong>① 模糊匹配兜底</strong>——告诉 AI"如果精确匹配失败，可以尝试同义词、上位词、关键词组合"，能查到 70%+ 的相似结果。<br>
+        <strong>② 引导 AI 调外部 API</strong>——比如 Skills 里写明"如果我们的 WIPO 接口没数据，可以让 AI 直接调用 WIPO 官方 API（提供文档链接和示例）"，作为长尾覆盖兜底。<br><br>
+        但<strong>真正的解决方案是补全 MCP 数据源</strong>——Skills 救场只是过渡。比如目前 WAP 类专利还在 ES 上未迁移，长期会通过补 MCP 接口解决。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">既然 Skills 能让 AI 读外部 API 文档，那为什么还要做 MCP？</div>
+      <div class="faq-a">
+        这是个好问题——核心答案是 <strong>三个差距太大</strong>：<br><br>
+        <strong>① 调用准确率</strong>：让 AI 读 API 文档自己拼请求，准确率 70-80%；走 MCP 是 99%+。差距来自 Schema 强约束。<br>
+        <strong>② Token 成本</strong>：每次让 AI 重读 API 文档浪费几千 Token；MCP 是结构化函数调用，几十 Token 搞定。<strong>调用量大了差几十倍成本</strong>。<br>
+        <strong>③ 商业护城河</strong>：让 AI 直接调外部 API，<strong>我们一分钱都收不到</strong>——绕开了我们的鉴权、计费、配额。MCP 是<strong>把用户调用沉淀为我们的商业价值</strong>的关键入口。<br><br>
+        所以 Skills "引导 AI 读外部 API" 只用于<strong>兜底场景</strong>（我们没覆盖到的长尾数据）。
+        <strong>主流量必须走我们的 MCP</strong>——既准又便宜又能商业化。
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">未来三样东西要更新，会不会很麻烦？</div>
+      <div class="faq-a">
+        <strong>分开管理，互不影响</strong>。<br><br>
+        📘 <strong>"经验手册"更新最频繁</strong>——业务方法论迭代，改文字就行，用户一键拉最新版<br>
+        🧰 <strong>"工具箱"跟着 API 走</strong>——我们 API 加新功能，更新一次工具箱，所有 AI 都生效<br>
+        🚚 <strong>"安装小助手"几乎不动</strong>——除非有新的 AI 助手要支持，否则一次写好用很久<br><br>
+        加起来<strong>每月只需 1.5 天维护工时</strong>，一个人能 hold 住。详细见<a href="maintenance.html">开发维护方案</a>。
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-nav">
+    <a class="nav-btn" href="index.html">
+      <div class="nav-btn-label">← 返回</div>
+      <div class="nav-btn-title">首页 · 方案概览</div>
+    </a>
+    <a class="nav-btn next" href="installer.html">
+      <div class="nav-btn-label">下一步 →</div>
+      <div class="nav-btn-title">看真实安装过程</div>
+    </a>
+  </div>
+
+</div>
+
+</body>
+</html>

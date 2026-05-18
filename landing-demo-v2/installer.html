@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>安装过程演示 · Pangolinfo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f7f8fa;
+    --bg-term: #0d1117;
+    --border: #e6e8ec;
+    --text: #0a0a0a;
+    --text-soft: #5a5f6a;
+    --text-mute: #8a8f99;
+    --brand: #ff5b1f;
+    --brand-soft: #fff1ea;
+    --brand-dark: #e04a10;
+    --mcp: #0969da;
+    --mcp-soft: #ddf4ff;
+    --skill: #6f42c1;
+    --skill-soft: #f4f0ff;
+    --green: #1f7f3a;
+    --green-soft: #e6f7ed;
+    --term-text: #e6edf3;
+    --term-dim: #7d8590;
+    --term-green: #3fb950;
+    --term-blue: #58a6ff;
+    --term-yellow: #d29922;
+    --term-purple: #bc8cff;
+    --term-orange: #ff7b3a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text); background: var(--bg-page);
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: none; }
+
+  .top-bar {
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 600; color: var(--text-soft);
+  }
+  .back-link:hover { color: var(--text); }
+  .touch-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 12px; border-radius: 999px;
+    background: var(--brand-soft); color: var(--brand-dark);
+    font-size: 12px; font-weight: 700;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 48px 24px; }
+  .hero-wrap { text-align: center; margin-bottom: 36px; }
+  h1 {
+    font-size: 32px; font-weight: 800; letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+  .subtitle {
+    color: var(--text-soft); font-size: 16px;
+    max-width: 640px; margin: 0 auto;
+  }
+
+  /* ----- Stage selector ----- */
+  .stage-tabs {
+    display: flex; gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .stage-tab {
+    padding: 8px 18px;
+    border-radius: 999px;
+    background: white;
+    border: 1px solid var(--border);
+    font-size: 13px; font-weight: 600;
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .stage-tab:hover { border-color: var(--brand); color: var(--text); }
+  .stage-tab.active {
+    background: var(--text); color: white; border-color: var(--text);
+  }
+
+  /* ----- Terminal ----- */
+  .terminal {
+    background: var(--bg-term); border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 30px 80px rgba(10,10,10,0.25), 0 10px 30px rgba(10,10,10,0.15);
+    margin-bottom: 28px;
+  }
+  .term-header {
+    background: #161b22; padding: 12px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid #21262d;
+  }
+  .term-dot { width: 12px; height: 12px; border-radius: 50%; }
+  .term-dot.red { background: #ff5f57; }
+  .term-dot.yellow { background: #febc2e; }
+  .term-dot.green { background: #28c840; }
+  .term-title {
+    margin-left: 12px; color: var(--term-dim);
+    font-size: 13px; font-family: 'JetBrains Mono', monospace;
+  }
+  .term-body {
+    padding: 22px 24px 26px;
+    font-family: 'JetBrains Mono', Consolas, Monaco, monospace;
+    font-size: 13px; line-height: 1.75;
+    color: var(--term-text); min-height: 560px;
+  }
+  .dim { color: var(--term-dim); }
+  .blue { color: var(--term-blue); }
+  .green { color: var(--term-green); }
+  .yellow { color: var(--term-yellow); }
+  .orange { color: var(--term-orange); }
+  .purple { color: var(--term-purple); }
+  .bold { font-weight: 700; }
+  .star-y { color: #f1c40f; }
+  .cursor {
+    display: inline-block; width: 8px; height: 14px;
+    background: var(--term-text); vertical-align: text-bottom;
+    animation: blink 1s steps(2) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .controls {
+    display: flex; justify-content: center; gap: 12px;
+    margin-bottom: 36px;
+  }
+  .ctrl-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 18px; border-radius: 10px;
+    background: var(--text); color: white;
+    border: none; cursor: pointer;
+    font-size: 14px; font-weight: 600; font-family: inherit;
+  }
+  .ctrl-btn:hover { background: #1f1f1f; }
+  .ctrl-btn.ghost { background: white; color: var(--text); border: 1px solid var(--border); }
+  .ctrl-btn.ghost:hover { background: var(--bg-page); }
+
+  /* ----- Step explanation ----- */
+  .step-explain {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+  }
+  .step-explain h3 {
+    font-size: 16px; font-weight: 700;
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .step-explain h3::before { content: '💡'; }
+  .explain-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+  }
+  .ex-item {
+    padding: 14px;
+    background: var(--bg-page);
+    border-radius: 10px;
+    border-left: 3px solid var(--brand);
+  }
+  .ex-item strong {
+    display: block;
+    font-size: 13px; font-weight: 700;
+    color: var(--text); margin-bottom: 4px;
+  }
+  .ex-item span {
+    font-size: 13px; color: var(--text-soft);
+    line-height: 1.5;
+  }
+
+  .footer-nav {
+    display: flex; justify-content: space-between; gap: 16px;
+    margin-top: 40px;
+  }
+  .nav-btn {
+    flex: 1; padding: 16px 20px;
+    background: white; border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.15s ease;
+  }
+  .nav-btn:hover { border-color: var(--brand); transform: translateY(-2px); }
+  .nav-btn-label {
+    font-size: 11px; color: var(--text-mute);
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  }
+  .nav-btn-title { font-size: 15px; font-weight: 700; margin-top: 4px; }
+  .nav-btn.next { text-align: right; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a class="back-link" href="index.html">← 返回首页</a>
+  <span class="touch-tag">完整安装流程演示</span>
+</div>
+
+<div class="container">
+
+  <div class="hero-wrap">
+    <h1>用户看到的画面是这样的</h1>
+    <p class="subtitle">下面是一段真实安装录像。<strong>用户全程只做了 5 件事</strong>：复制粘贴、选 AI 助手、输邮箱、输验证码、输密码。<br>剩下你看到屏幕上动的所有字，<strong>都是脚本自动跑的</strong>。</p>
+  </div>
+
+  <div class="stage-tabs">
+    <div class="stage-tab active" onclick="playScene('full')">▶ 完整流程</div>
+    <div class="stage-tab" onclick="playScene('s1')">① 开场欢迎</div>
+    <div class="stage-tab" onclick="playScene('s2')">② 用户选 AI 助手</div>
+    <div class="stage-tab" onclick="playScene('s3')">③ 自动放好手册和工具箱</div>
+    <div class="stage-tab" onclick="playScene('s4')">④ 留邮箱注册账号</div>
+    <div class="stage-tab" onclick="playScene('s5')">⑤ 装好了，开用</div>
+  </div>
+
+  <div class="terminal">
+    <div class="term-header">
+      <div class="term-dot red"></div>
+      <div class="term-dot yellow"></div>
+      <div class="term-dot green"></div>
+      <span class="term-title">~ — pangolinfo installer</span>
+    </div>
+    <div class="term-body" id="term-body"></div>
+  </div>
+
+  <div class="controls">
+    <button class="ctrl-btn" onclick="playScene(currentScene)">↻ 重新播放当前段</button>
+    <button class="ctrl-btn ghost" onclick="playScene('full')">▶ 播放完整流程</button>
+  </div>
+
+  <div class="step-explain">
+    <h3>每一步为什么这么设计</h3>
+    <div class="explain-grid">
+      <div class="ex-item">
+        <strong>① 开场欢迎</strong>
+        <span>告诉用户"我接下来要做什么"。透明可见，建立信任。屏幕上还会显示我们的 GitHub 链接和 Star 数</span>
+      </div>
+      <div class="ex-item">
+        <strong>② 让用户选 AI 助手</strong>
+        <span>不让脚本"猜"用户用啥——直接给菜单。9 个主流 AI 全部支持，<strong>不会卡住任何人</strong></span>
+      </div>
+      <div class="ex-item">
+        <strong>②.5 让用户选装什么</strong>
+        <span>📘 只装手册（企业/网页端友好）/ 🧰 只装工具箱（开发者集成）/ ✨ 都装（默认推荐）。<strong>覆盖不同部署场景</strong></span>
+      </div>
+      <div class="ex-item">
+        <strong>③ 放手册和工具箱</strong>
+        <span>30 秒内把"经验手册"和"工具箱"放到正确位置。这一步全自动，用户什么都不用做</span>
+      </div>
+      <div class="ex-item">
+        <strong>④ 终端内完成注册</strong>
+        <span>用户没账号？直接在当前窗口输邮箱、收验证码、设密码。<strong>不切浏览器，转化率高 40%</strong></span>
+      </div>
+      <div class="ex-item">
+        <strong>⑤ 装好提示 + 引导 Star</strong>
+        <span>给用户具体的"试试这个"建议。同时温柔地说"觉得不错的话给我们一颗星"，转化率最高的瞬间</span>
+      </div>
+      <div class="ex-item">
+        <strong>Mac / Win / Linux 全支持</strong>
+        <span>三个系统一行命令都一样。Windows 用 PowerShell 等价命令，体验完全一致</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-nav">
+    <a class="nav-btn" href="architecture.html">
+      <div class="nav-btn-label">← 上一步</div>
+      <div class="nav-btn-title">架构详解</div>
+    </a>
+    <a class="nav-btn next" href="plan.html">
+      <div class="nav-btn-label">下一步 →</div>
+      <div class="nav-btn-title">两周交付计划</div>
+    </a>
+  </div>
+</div>
+
+<script>
+  const term = document.getElementById('term-body');
+  let currentScene = 'full';
+  let timeoutIds = [];
+
+  // ============ Scene data ============
+  const scenes = {
+    full: [
+      // Stage 1: Banner
+      { t: 0,    html: '<span class="green">$</span> curl -fsSL pangolinfo.dev/install | sh' },
+      { t: 500,  html: '' },
+      { t: 700,  html: '<span class="orange">╔══════════════════════════════════════════════════════╗</span>' },
+      { t: 800,  html: '<span class="orange">║</span>   <span class="bold">Pangolinfo Installer</span>  <span class="dim">v1.0.0</span>                    <span class="orange">║</span>' },
+      { t: 900,  html: '<span class="orange">║</span>   <span class="blue">github.com/pangolinfo/skills</span>                       <span class="orange">║</span>' },
+      { t: 1000, html: '<span class="orange">║</span>   <span class="star-y">★ 1,247</span>  ·  <span class="dim">12.8k installs</span>  ·  <span class="dim">MIT</span>             <span class="orange">║</span>' },
+      { t: 1100, html: '<span class="orange">╚══════════════════════════════════════════════════════╝</span>' },
+      { t: 1400, html: '' },
+      { t: 1600, html: '<span class="bold">This installer will:</span>' },
+      { t: 1800, html: '  <span class="green">•</span> Install <span class="purple">Skills</span> (Markdown methodology files)' },
+      { t: 2000, html: '  <span class="green">•</span> Register <span class="blue">MCP server</span> (real-time API tools)' },
+      { t: 2200, html: '  <span class="green">•</span> Guide you through API key setup' },
+      { t: 2600, html: '' },
+      // Stage 2: Choose agent
+      { t: 2800, html: '<span class="bold">Which AI agent are you using?</span>' },
+      { t: 3000, html: '' },
+      { t: 3100, html: '  <span class="green">1)</span> 🤖 <span class="bold">Claude Code</span>      <span class="dim">(auto · Skills + MCP)</span>' },
+      { t: 3200, html: '  <span class="green">2)</span> 🖱️  Cursor            <span class="dim">(auto · Skills + MCP)</span>' },
+      { t: 3300, html: '  <span class="green">3)</span> 💻 Cline              <span class="dim">(auto · Skills + MCP)</span>' },
+      { t: 3400, html: '  <span class="green">4)</span> 🏄 Windsurf           <span class="dim">(Skills auto, MCP via docs)</span>' },
+      { t: 3500, html: '  <span class="green">5)</span> ⚡ Hermes             <span class="dim">(Skills auto, MCP via docs)</span>' },
+      { t: 3600, html: '  <span class="green">6)</span> ⌨️  Codex/OpenCode    <span class="dim">(Skills auto, MCP via docs)</span>' },
+      { t: 3700, html: '  <span class="green">7)</span> 🦀 OpenClaw           <span class="dim">(Skills auto, MCP via docs)</span>' },
+      { t: 3800, html: '  <span class="green">8)</span> 🌐 Claude.ai / ChatGPT <span class="dim">(ZIP download)</span>' },
+      { t: 3900, html: '  <span class="green">9)</span> 🔧 Other / Manual     <span class="dim">(show path list)</span>' },
+      { t: 4100, html: '' },
+      { t: 4300, html: '<span class="bold">Enter choice [1-9]:</span> 1' },
+      { t: 4600, html: '' },
+      { t: 4800, html: '<span class="dim">✓ Detected:</span> <span class="purple">Claude Code</span> <span class="dim">at ~/.claude/</span>' },
+      { t: 5000, html: '' },
+      // Stage 2b: Choose install scope
+      { t: 5200, html: '<span class="bold">What do you want to install?</span>' },
+      { t: 5400, html: '  <span class="green">1)</span> 📘 Skills only       <span class="dim">— 纯文本部署 · 企业/网页端友好</span>' },
+      { t: 5600, html: '  <span class="green">2)</span> 🧰 MCP only          <span class="dim">— 精准 API 调用 · 开发者集成</span>' },
+      { t: 5800, html: '  <span class="green">3)</span> ✨ <span class="bold">Both (推荐)</span>      <span class="dim">— 综合体验最佳</span>' },
+      { t: 6000, html: '<span class="bold">Enter choice [1-3]:</span> 3' },
+      { t: 6400, html: '' },
+      // Stage 3: Install
+      { t: 6800, html: '<span class="bold">[1/3]</span> Installing Skills...' },
+      { t: 7000, html: '       <span class="dim">↓ from</span> <span class="blue">github.com/pangolinfo/skills</span>' },
+      { t: 7300, html: '       <span class="green">━━━━━━━━━━━━━━━━━━━━</span> <span class="dim">6 skills</span> <span class="green">100%</span>' },
+      { t: 7500, html: '       <span class="green">✓</span> <span class="purple">amazon-niche</span>, <span class="purple">competitor-radar</span>, <span class="purple">listing-opt</span>' },
+      { t: 7700, html: '       <span class="green">✓</span> Installed to <span class="dim">~/.claude/skills/pangolinfo/</span>' },
+      { t: 8000, html: '' },
+      { t: 8200, html: '<span class="bold">[2/3]</span> Registering MCP server...' },
+      { t: 8400, html: '       <span class="dim">↓ from</span> <span class="blue">github.com/pangolinfo/mcp-server/releases</span>' },
+      { t: 8700, html: '       <span class="green">━━━━━━━━━━━━━━━━━━━━</span> <span class="dim">2.4 MB</span> <span class="green">100%</span>' },
+      { t: 8900, html: '       <span class="green">✓</span> Binary at <span class="dim">/usr/local/bin/pangolinfo-mcp</span>' },
+      { t: 9100, html: '       <span class="green">✓</span> Added to <span class="dim">~/.claude/mcp.json</span>:' },
+      { t: 9300, html: '         <span class="dim">tools:</span> <span class="blue">search_amazon</span>, <span class="blue">get_product</span>, <span class="blue">get_ai_serp</span>, <span class="blue">search_wipo</span>' },
+      { t: 9600, html: '' },
+      // Stage 4: API key (in-terminal register)
+      { t: 9800, html: '<span class="bold">[3/3]</span> API Key setup' },
+      { t: 10100, html: '       <span class="bold">Do you have an API key?</span> <span class="dim">[y/N]</span> n' },
+      { t: 10500, html: '       <span class="dim">→ Let\'s register one — fully in terminal, no browser switch.</span>' },
+      { t: 10900, html: '' },
+      { t: 11100, html: '       <span class="bold">Email:</span> user@example.com' },
+      { t: 11400, html: '       <span class="dim">→ Sending verification code...</span>' },
+      { t: 11800, html: '       <span class="green">✓</span> Code sent to <span class="blue">user@example.com</span>' },
+      { t: 12100, html: '       <span class="bold">Code:</span> 482917  <span class="green">✓ verified</span>' },
+      { t: 12500, html: '       <span class="bold">Password:</span> ••••••••••••' },
+      { t: 12800, html: '       <span class="dim">→ Creating account...</span>' },
+      { t: 13200, html: '       <span class="green">✓</span> Account created · API key <span class="blue">pgl_aBc123…</span> saved' },
+      { t: 13500, html: '       <span class="green">✓</span> Written to <span class="dim">~/.zshrc</span> &amp; <span class="dim">~/.pangolinfo/config</span>' },
+      { t: 13800, html: '       <span class="green">✓</span> Test call passed (<span class="dim">200 OK in 142ms</span>)' },
+      { t: 14100, html: '' },
+      // Stage 5: Done
+      { t: 14300, html: '<span class="green bold">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>' },
+      { t: 14500, html: '<span class="green bold">✓ Installation complete</span> <span class="dim">in 42.6s</span>' },
+      { t: 14700, html: '<span class="green bold">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>' },
+      { t: 15000, html: '' },
+      { t: 15200, html: '<span class="bold">Try this in Claude Code:</span>' },
+      { t: 15400, html: '  <span class="purple">›</span> "用 pangolinfo 查询 B0DYTF8L2W 的销量"' },
+      { t: 15600, html: '  <span class="purple">›</span> "帮我做一份蓝牙耳机的选品报告"' },
+      { t: 15900, html: '' },
+      { t: 16100, html: '  <span class="star-y">⭐</span>  <span class="bold">Enjoyed it? Star us on GitHub:</span>' },
+      { t: 16300, html: '      <span class="blue">https://github.com/pangolinfo/skills</span>' },
+      { t: 16600, html: '  <span class="dim">We\'re a small team. Your star really helps.</span> 🙏' },
+      { t: 16900, html: '' },
+      { t: 17100, html: '  <span class="green">[Press ENTER to open GitHub, any key to skip]</span> <span class="cursor"></span>' },
+    ],
+
+    s1: [
+      { t: 0,    html: '<span class="green">$</span> curl -fsSL pangolinfo.dev/install | sh' },
+      { t: 500,  html: '' },
+      { t: 700,  html: '<span class="orange">╔══════════════════════════════════════════════════════╗</span>' },
+      { t: 800,  html: '<span class="orange">║</span>   <span class="bold">Pangolinfo Installer</span>  <span class="dim">v1.0.0</span>                    <span class="orange">║</span>' },
+      { t: 900,  html: '<span class="orange">║</span>   <span class="blue">github.com/pangolinfo/skills</span>                       <span class="orange">║</span>' },
+      { t: 1000, html: '<span class="orange">║</span>   <span class="star-y">★ 1,247</span>  ·  <span class="dim">12.8k installs</span>  ·  <span class="dim">MIT</span>             <span class="orange">║</span>' },
+      { t: 1100, html: '<span class="orange">╚══════════════════════════════════════════════════════╝</span>' },
+      { t: 1400, html: '' },
+      { t: 1600, html: '<span class="bold">This installer will:</span>' },
+      { t: 1800, html: '  <span class="green">•</span> Install <span class="purple">Skills</span> (Markdown methodology files)' },
+      { t: 2000, html: '  <span class="green">•</span> Register <span class="blue">MCP server</span> (real-time API tools)' },
+      { t: 2200, html: '  <span class="green">•</span> Guide you through API key setup' },
+      { t: 2500, html: '' },
+      { t: 2700, html: '<span class="dim">Continue? [Y/n]</span> <span class="cursor"></span>' },
+    ],
+
+    s2: [
+      { t: 0,    html: '<span class="bold">Which AI agent are you using?</span>' },
+      { t: 200,  html: '' },
+      { t: 300,  html: '  <span class="green">1)</span> 🤖 <span class="bold">Claude Code</span>      <span class="dim">(auto · Skills + MCP)</span>' },
+      { t: 400,  html: '  <span class="green">2)</span> 🖱️  Cursor            <span class="dim">(auto · Skills + MCP)</span>' },
+      { t: 500,  html: '  <span class="green">3)</span> 💻 Cline              <span class="dim">(auto · Skills + MCP)</span>' },
+      { t: 600,  html: '  <span class="green">4)</span> 🏄 Windsurf           <span class="dim">(Skills auto, MCP via docs)</span>' },
+      { t: 700,  html: '  <span class="green">5)</span> ⚡ Hermes             <span class="dim">(Skills auto, MCP via docs)</span>' },
+      { t: 800,  html: '  <span class="green">6)</span> ⌨️  Codex/OpenCode    <span class="dim">(Skills auto, MCP via docs)</span>' },
+      { t: 900,  html: '  <span class="green">7)</span> 🦀 OpenClaw           <span class="dim">(Skills auto, MCP via docs)</span>' },
+      { t: 1000, html: '  <span class="green">8)</span> 🌐 Claude.ai / ChatGPT <span class="dim">(ZIP download)</span>' },
+      { t: 1100, html: '  <span class="green">9)</span> 🔧 Other / Manual     <span class="dim">(show path list)</span>' },
+      { t: 1400, html: '' },
+      { t: 1600, html: '<span class="bold">Enter choice [1-9]:</span> 1' },
+      { t: 2100, html: '' },
+      { t: 2300, html: '<span class="dim">✓ Detected:</span> <span class="purple">Claude Code</span> <span class="dim">at ~/.claude/</span>' },
+      { t: 2700, html: '' },
+      { t: 2900, html: '<span class="bold">What do you want to install?</span>' },
+      { t: 3100, html: '  <span class="green">1)</span> 📘 Skills only       <span class="dim">— 纯文本部署 · 企业 IT 友好 · 网页端唯一选择</span>' },
+      { t: 3300, html: '  <span class="green">2)</span> 🧰 MCP only          <span class="dim">— 精准 API 调用 · 适合开发者集成</span>' },
+      { t: 3500, html: '  <span class="green">3)</span> ✨ <span class="bold">Both (recommended)</span> <span class="dim">— 综合体验最佳 · 普通用户首选</span>' },
+      { t: 3800, html: '' },
+      { t: 4000, html: '<span class="bold">Enter choice [1-3]:</span> 3' },
+    ],
+
+    s3: [
+      { t: 0,    html: '<span class="bold">[1/3]</span> Installing Skills...' },
+      { t: 200,  html: '       <span class="dim">↓ from</span> <span class="blue">github.com/pangolinfo/skills</span>' },
+      { t: 600,  html: '       <span class="green">━━━━━━━━━━━━━━━━━━━━</span> <span class="dim">6 skills</span> <span class="green">100%</span>' },
+      { t: 800,  html: '       <span class="green">✓</span> <span class="purple">amazon-niche</span>     <span class="dim">(选品方法论)</span>' },
+      { t: 1000, html: '       <span class="green">✓</span> <span class="purple">competitor-radar</span> <span class="dim">(竞品监控)</span>' },
+      { t: 1200, html: '       <span class="green">✓</span> <span class="purple">listing-opt</span>      <span class="dim">(Listing 优化)</span>' },
+      { t: 1400, html: '       <span class="green">✓</span> Installed to <span class="dim">~/.claude/skills/pangolinfo/</span>' },
+      { t: 1800, html: '' },
+      { t: 2000, html: '<span class="bold">[2/3]</span> Registering MCP server...' },
+      { t: 2200, html: '       <span class="dim">↓ from</span> <span class="blue">github.com/pangolinfo/mcp-server/releases</span>' },
+      { t: 2600, html: '       <span class="green">━━━━━━━━━━━━━━━━━━━━</span> <span class="dim">2.4 MB</span> <span class="green">100%</span>' },
+      { t: 2800, html: '       <span class="green">✓</span> Binary at <span class="dim">/usr/local/bin/pangolinfo-mcp</span>' },
+      { t: 3000, html: '       <span class="green">✓</span> Added to <span class="dim">~/.claude/mcp.json</span>:' },
+      { t: 3300, html: '         <span class="dim">{</span>' },
+      { t: 3400, html: '           "mcpServers": {' },
+      { t: 3500, html: '             "<span class="blue">pangolinfo</span>": {' },
+      { t: 3600, html: '               "command": "<span class="green">pangolinfo-mcp</span>",' },
+      { t: 3700, html: '               "args": ["--stdio"]' },
+      { t: 3800, html: '             }' },
+      { t: 3900, html: '           }' },
+      { t: 4000, html: '         }' },
+      { t: 4200, html: '       <span class="green">✓</span> Tools available:' },
+      { t: 4400, html: '         <span class="blue">search_amazon</span>, <span class="blue">get_product</span>, <span class="blue">get_ai_serp</span>, <span class="blue">search_wipo</span>' },
+    ],
+
+    s4: [
+      { t: 0,    html: '<span class="bold">[3/3]</span> API Key setup' },
+      { t: 300,  html: '' },
+      { t: 600,  html: '       <span class="bold">Do you have a Pangolinfo API key?</span> <span class="dim">[y/N]</span> n' },
+      { t: 1100, html: '' },
+      { t: 1300, html: '       <span class="dim">No problem — we\'ll register one for you now.</span>' },
+      { t: 1500, html: '       <span class="dim">─────────────────────────────────────────────</span>' },
+      { t: 1800, html: '' },
+      { t: 2000, html: '       <span class="bold">Step 1.</span> Enter your email:' },
+      { t: 2300, html: '       <span class="green">›</span> user@example.com<span class="cursor"></span>' },
+      { t: 2900, html: '' },
+      { t: 3100, html: '       <span class="dim">→ Sending verification code...</span>' },
+      { t: 3600, html: '       <span class="green">✓</span> Code sent to <span class="blue">user@example.com</span>' },
+      { t: 3900, html: '' },
+      { t: 4100, html: '       <span class="bold">Step 2.</span> Enter the 6-digit code <span class="dim">(check your inbox)</span>:' },
+      { t: 4500, html: '       <span class="green">›</span> 482917' },
+      { t: 4900, html: '       <span class="dim">→ Verifying...</span>' },
+      { t: 5300, html: '       <span class="green">✓</span> Email verified' },
+      { t: 5600, html: '' },
+      { t: 5800, html: '       <span class="bold">Step 3.</span> Set a password <span class="dim">(min 8 chars, hidden)</span>:' },
+      { t: 6200, html: '       <span class="green">›</span> ••••••••••••' },
+      { t: 6600, html: '       <span class="dim">→ Creating account &amp; generating API key...</span>' },
+      { t: 7200, html: '       <span class="green">✓</span> Account created' },
+      { t: 7400, html: '       <span class="green">✓</span> API key: <span class="blue">pgl_aBc123…</span> <span class="dim">(saved)</span>' },
+      { t: 7700, html: '' },
+      { t: 7900, html: '       <span class="dim">─────────────────────────────────────────────</span>' },
+      { t: 8100, html: '       <span class="green">✓</span> Written to <span class="dim">~/.pangolinfo/config</span>' },
+      { t: 8300, html: '       <span class="green">✓</span> Added to <span class="dim">~/.zshrc</span>:' },
+      { t: 8500, html: '         <span class="dim">export PANGOLINFO_API_KEY=pgl_...</span>' },
+      { t: 8800, html: '       <span class="green">✓</span> Test call passed (<span class="dim">200 OK in 142ms</span>)' },
+    ],
+
+    s5: [
+      { t: 0,    html: '<span class="green bold">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>' },
+      { t: 200,  html: '<span class="green bold">✓ Installation complete</span> <span class="dim">in 28.6s</span>' },
+      { t: 400,  html: '<span class="green bold">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>' },
+      { t: 800,  html: '' },
+      { t: 1000, html: '<span class="bold">Try this in Claude Code:</span>' },
+      { t: 1200, html: '  <span class="purple">›</span> "用 pangolinfo 查询 B0DYTF8L2W 的销量和价格走势"' },
+      { t: 1400, html: '  <span class="purple">›</span> "帮我做一份蓝牙耳机的 Amazon 选品报告"' },
+      { t: 1600, html: '  <span class="purple">›</span> "monitor 这 5 个 ASIN 每日竞品变化"' },
+      { t: 2000, html: '' },
+      { t: 2200, html: '<span class="dim">─────────────────────────────────────────────────────</span>' },
+      { t: 2500, html: '' },
+      { t: 2700, html: '  <span class="star-y">⭐</span>  <span class="bold">Enjoyed it? Star us on GitHub:</span>' },
+      { t: 2900, html: '      <span class="blue">https://github.com/pangolinfo/skills</span>' },
+      { t: 3200, html: '' },
+      { t: 3400, html: '  <span class="dim">We\'re a small team building this on weekends.</span>' },
+      { t: 3600, html: '  <span class="dim">Your star really helps us keep going.</span> 🙏' },
+      { t: 3900, html: '' },
+      { t: 4100, html: '  <span class="green">[Press ENTER to open GitHub, any other key to skip]</span> <span class="cursor"></span>' },
+    ],
+  };
+
+  function playScene(name) {
+    currentScene = name;
+    document.querySelectorAll('.stage-tab').forEach(t => t.classList.remove('active'));
+    const idx = ['full','s1','s2','s3','s4','s5'].indexOf(name);
+    if (idx >= 0) document.querySelectorAll('.stage-tab')[idx].classList.add('active');
+
+    timeoutIds.forEach(id => clearTimeout(id));
+    timeoutIds = [];
+    term.innerHTML = '';
+
+    const lines = scenes[name];
+    lines.forEach(({ t, html }) => {
+      const id = setTimeout(() => {
+        const div = document.createElement('div');
+        div.innerHTML = html || '&nbsp;';
+        term.appendChild(div);
+        term.scrollTop = term.scrollHeight;
+      }, t);
+      timeoutIds.push(id);
+    });
+  }
+
+  playScene('full');
+</script>
+
+</body>
+</html>

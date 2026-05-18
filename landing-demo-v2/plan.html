@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>两周交付计划 · Pangolinfo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-page: #f7f8fa;
+    --border: #e6e8ec;
+    --text: #0a0a0a;
+    --text-soft: #5a5f6a;
+    --text-mute: #8a8f99;
+    --brand: #ff5b1f;
+    --brand-soft: #fff1ea;
+    --brand-dark: #e04a10;
+    --mcp: #0969da;
+    --mcp-soft: #ddf4ff;
+    --skill: #6f42c1;
+    --skill-soft: #f4f0ff;
+    --green: #1f7f3a;
+    --green-soft: #e6f7ed;
+    --yellow: #9a6700;
+    --yellow-soft: #fff8c5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+    color: var(--text); background: var(--bg-page);
+    line-height: 1.6; -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a { color: inherit; text-decoration: none; }
+  code { font-family: 'JetBrains Mono', monospace; }
+
+  .top-bar {
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .back-link {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 600; color: var(--text-soft);
+  }
+  .back-link:hover { color: var(--text); }
+  .touch-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 12px; border-radius: 999px;
+    background: var(--green-soft); color: var(--green);
+    font-size: 12px; font-weight: 700;
+  }
+
+  .hero-wrap {
+    background: white; border-bottom: 1px solid var(--border);
+    padding: 56px 24px 40px; text-align: center;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 14px; border-radius: 999px;
+    background: var(--brand-soft); color: var(--brand-dark);
+    font-size: 13px; font-weight: 700;
+    margin-bottom: 20px;
+  }
+  h1 {
+    font-size: clamp(30px, 4vw, 44px);
+    font-weight: 800; letter-spacing: -0.03em;
+    line-height: 1.15; margin-bottom: 14px;
+  }
+  .subtitle {
+    color: var(--text-soft); font-size: 17px;
+    max-width: 680px; margin: 0 auto;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 56px 24px; }
+
+  /* ----- Summary box ----- */
+  .summary {
+    background: linear-gradient(135deg, var(--brand-soft) 0%, #fff8eb 100%);
+    border: 1px solid #ffd9a8;
+    border-radius: 20px;
+    padding: 28px 32px;
+    margin-bottom: 48px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 24px;
+    text-align: center;
+  }
+  .summary-item {
+    border-right: 1px solid rgba(0,0,0,0.08);
+  }
+  .summary-item:last-child { border-right: none; }
+  .summary-num {
+    font-size: 32px; font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, var(--brand) 0%, #ff8a4c 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .summary-label {
+    font-size: 12px; color: var(--text-soft);
+    margin-top: 4px;
+    font-weight: 600;
+  }
+  @media (max-width: 600px) {
+    .summary-item { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 14px; }
+    .summary-item:last-child { border-bottom: none; padding-bottom: 0; }
+  }
+
+  /* ----- Weeks ----- */
+  .week {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 32px;
+    margin-bottom: 32px;
+  }
+  .week-head {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .week-num {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--brand) 0%, #ff8a4c 100%);
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 18px;
+  }
+  .week-title {
+    font-size: 22px; font-weight: 800; letter-spacing: -0.01em;
+  }
+  .week-sub {
+    color: var(--text-soft); font-size: 14px;
+    flex: 1;
+    margin-left: 8px;
+  }
+  .week-delivery {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 12px; border-radius: 999px;
+    background: var(--green-soft); color: var(--green);
+    font-size: 12px; font-weight: 700;
+  }
+
+  .day-list {
+    display: flex; flex-direction: column;
+    gap: 12px;
+  }
+  .day-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 90px;
+    gap: 16px;
+    align-items: center;
+    padding: 14px 16px;
+    background: var(--bg-page);
+    border-radius: 10px;
+    transition: all 0.15s ease;
+  }
+  .day-row:hover {
+    background: white;
+    border: 1px solid var(--border);
+    transform: translateX(4px);
+  }
+  .day-row:hover { padding: 13px 15px; }
+  .day-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; font-weight: 700;
+    color: var(--brand-dark);
+  }
+  .day-tasks {
+    font-size: 14px; line-height: 1.6;
+  }
+  .day-tasks strong { font-weight: 700; }
+  .day-tasks code {
+    background: rgba(0,0,0,0.05);
+    padding: 1px 5px; border-radius: 4px;
+    font-size: 12.5px;
+  }
+  .day-hours {
+    font-size: 12px; color: var(--text-mute);
+    text-align: right;
+    font-weight: 600;
+  }
+  @media (max-width: 640px) {
+    .day-row { grid-template-columns: 1fr; }
+    .day-hours { text-align: left; }
+  }
+
+  /* ----- Risk section ----- */
+  .risk-section h2 {
+    font-size: 24px; font-weight: 800; letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  .risk-section p.sub {
+    color: var(--text-soft); font-size: 15px;
+    margin-bottom: 24px;
+  }
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+  }
+  .risk-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    border-top: 4px solid var(--yellow);
+  }
+  .risk-card.green { border-top-color: var(--green); }
+  .risk-card h3 {
+    font-size: 15px; font-weight: 700; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .risk-card p {
+    font-size: 13px; color: var(--text-soft);
+    line-height: 1.6; margin-bottom: 12px;
+  }
+  .risk-card .solution {
+    background: var(--bg-page);
+    padding: 10px 12px; border-radius: 8px;
+    font-size: 12.5px; color: var(--text);
+    border-left: 3px solid var(--brand);
+  }
+  .risk-card .solution strong {
+    display: block; font-size: 11px;
+    color: var(--brand-dark);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    margin-bottom: 3px;
+    font-weight: 700;
+  }
+
+  /* ----- Cuts ----- */
+  .cuts-box {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 48px;
+  }
+  .cuts-box h3 {
+    font-size: 16px; font-weight: 700; margin-bottom: 14px;
+  }
+  .cuts-list {
+    list-style: none;
+  }
+  .cuts-list li {
+    padding: 10px 0 10px 24px;
+    position: relative;
+    font-size: 14px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .cuts-list li:last-child { border-bottom: none; }
+  .cuts-list li::before {
+    content: '→';
+    position: absolute; left: 0; top: 10px;
+    color: var(--text-mute); font-weight: 700;
+  }
+  .cuts-list strong { font-weight: 700; }
+  .cuts-list .tag {
+    display: inline-block;
+    padding: 2px 8px; border-radius: 5px;
+    background: var(--green-soft); color: var(--green);
+    font-size: 11px; font-weight: 700;
+    margin-left: 6px;
+  }
+
+  .footer-nav {
+    display: flex; justify-content: space-between; gap: 16px;
+    margin-top: 40px;
+  }
+  .nav-btn {
+    flex: 1; padding: 16px 20px;
+    background: white; border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.15s ease;
+  }
+  .nav-btn:hover { border-color: var(--brand); transform: translateY(-2px); }
+  .nav-btn-label {
+    font-size: 11px; color: var(--text-mute);
+    text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600;
+  }
+  .nav-btn-title { font-size: 15px; font-weight: 700; margin-top: 4px; }
+  .nav-btn.next { text-align: right; }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <a class="back-link" href="index.html">← 返回首页</a>
+  <span class="touch-tag">两周交付计划</span>
+</div>
+
+<div class="hero-wrap">
+  <div class="hero-badge">📅 10 个工作日 · Skills + MCP + 多 Agent</div>
+  <h1>两周交付计划</h1>
+  <p class="subtitle">
+    一人主导 + <strong>多 Agent 并行开发</strong>提速，两周内交付完整方案。<br>
+    <strong>第一周</strong>：三组件并行——脚本骨架、MCP server 三件套、落地页同时推进。<br>
+    <strong>第二周</strong>：9 个 AI 助手全部适配 + 双语 + 埋点 + 跨平台联调 + 正式发布。
+  </p>
+</div>
+
+<div class="container">
+
+  <!-- ============ Summary ============ -->
+  <div class="summary">
+    <div class="summary-item">
+      <div class="summary-num">10d</div>
+      <div class="summary-label">两周日历</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-num">9</div>
+      <div class="summary-label">AI 助手全适配</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-num">3</div>
+      <div class="summary-label">MCP Server 全做</div>
+    </div>
+    <div class="summary-item">
+      <div class="summary-num">2</div>
+      <div class="summary-label">中英双语</div>
+    </div>
+  </div>
+
+  <!-- ============ Week 1 ============ -->
+  <div class="week">
+    <div class="week-head">
+      <div class="week-num">1</div>
+      <div>
+        <div class="week-title">第一周 · 三组件并行推进</div>
+        <div class="week-sub" style="margin-left:0;">多 Agent 模式：MCP server 三件套 + 安装脚本 + 落地页同时开工</div>
+      </div>
+      <div class="week-delivery">交付：Claude / Cursor / Cline 全自动可用</div>
+    </div>
+
+    <div class="day-list">
+      <div class="day-row">
+        <div class="day-num">Day 1</div>
+        <div class="day-tasks">
+          <strong>三线并行启动</strong>：注册 <code>pangolinfo.dev</code> + Vercel 部署 · 落地页生产化 · 同时拉起 MCP server 项目骨架 + 拉起安装脚本项目骨架（多 Agent 同时跑）
+        </div>
+        <div class="day-hours">1d</div>
+      </div>
+      <div class="day-row">
+        <div class="day-num">Day 2</div>
+        <div class="day-tasks">
+          <strong>MCP server 三件套同步开发</strong>：<code>amazon-scraper</code>、<code>ai-serp</code>、<code>wipo</code> 三个 MCP server 并行实现，每个含 4-6 个核心 tool；落地页中英双语版同步推进
+        </div>
+        <div class="day-hours">1d</div>
+      </div>
+      <div class="day-row">
+        <div class="day-num">Day 3</div>
+        <div class="day-tasks">
+          <strong>MCP server 联调 + 安装脚本主框架</strong>：3 个 server 跨平台编译（Mac/Linux/Win 二进制）；install.sh 交互菜单 + Claude Code 分支完成
+        </div>
+        <div class="day-hours">1d</div>
+      </div>
+      <div class="day-row">
+        <div class="day-num">Day 4</div>
+        <div class="day-tasks">
+          <strong>API Key 终端注册 + 落地页 9 个面板</strong>：问 Key → 邮箱 → 验证码 → 密码 → 自动拿 Key 完整链路；落地页 9 个 Agent 手风琴内容定稿（中英双版）
+        </div>
+        <div class="day-hours">1d</div>
+      </div>
+      <div class="day-row">
+        <div class="day-num">Day 5</div>
+        <div class="day-tasks">
+          <strong>Cursor + Cline 自动安装 + 触点 5 延迟引导</strong>：MCP 配置写入两家 IDE 的 settings；CLI 使用次数追踪 + 10 次后弹 Star 提示；触点 1-5 全部上线
+        </div>
+        <div class="day-hours">1d</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Week 2 ============ -->
+  <div class="week">
+    <div class="week-head">
+      <div class="week-num">2</div>
+      <div>
+        <div class="week-title">第二周 · 扩面 + 埋点 + 发布</div>
+        <div class="week-sub" style="margin-left:0;">剩余 6 个 Agent + Windows + 埋点系统 + 跨平台测试 + 正式发布</div>
+      </div>
+      <div class="week-delivery">交付：完整版正式上线</div>
+    </div>
+
+    <div class="day-list">
+      <div class="day-row">
+        <div class="day-num">Day 6</div>
+        <div class="day-tasks">
+          <strong>4 个本地 Agent 自动适配</strong>：Hermes / Windsurf / Codex / OpenClaw 的 Skills 拷贝 + MCP 注册分支全部跑通；每家做最小可用验证
+        </div>
+        <div class="day-hours">1d</div>
+      </div>
+      <div class="day-row">
+        <div class="day-num">Day 7</div>
+        <div class="day-tasks">
+          <strong>网页端方案 + install.ps1 完整版</strong>：Claude.ai / ChatGPT GPTs 的 ZIP 自动打包 + 上传引导动画；Windows PowerShell 版完整实现（含终端内注册）
+        </div>
+        <div class="day-hours">1d</div>
+      </div>
+      <div class="day-row">
+        <div class="day-num">Day 8</div>
+        <div class="day-tasks">
+          <strong>埋点系统 + 数据看板</strong>：安装漏斗、Agent 选择分布、MCP 调用量、留存全埋点；接入 PostHog 或自建轻量上报；管理后台可视化看板
+        </div>
+        <div class="day-hours">1d</div>
+      </div>
+      <div class="day-row">
+        <div class="day-num">Day 9</div>
+        <div class="day-tasks">
+          <strong>跨平台真机联调 + GitHub 仓库门面</strong>：Mac/Linux/Win11 三平台真机走查；CI/CD 自动化测试矩阵；README、Release Workflow、Topics 全部上线
+        </div>
+        <div class="day-hours">1d</div>
+      </div>
+      <div class="day-row">
+        <div class="day-num">Day 10</div>
+        <div class="day-tasks">
+          <strong>Bug 修复 + 正式发布</strong>：找 5-10 人真机试装收反馈、修关键 bug；Twitter / 小红书 / V2EX 同步发文；申请 awesome-mcp、awesome-claude 收录；中英双语推广启动
+        </div>
+        <div class="day-hours">1d</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ Full scope ============ -->
+  <div class="cuts-box" style="background:linear-gradient(135deg,#e6f7ed 0%,#f0fdf4 100%);border-color:#bbf0c8;">
+    <h3 style="display:flex;align-items:center;gap:8px;">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:7px;background:#1f7f3a;color:white;font-size:14px;font-weight:800;">✓</span>
+      两周完整交付 · 不做缩水版
+    </h3>
+    <p style="font-size:14px;color:#5a5f6a;margin-bottom:14px;line-height:1.6;">
+      通过<strong>多 Agent 并行开发</strong>提速，所有功能一次性做完——下面这些都<strong>在两周内交付</strong>：
+    </p>
+    <ul class="cuts-list">
+      <li><strong>9 个 AI 助手全自动安装</strong><span class="tag">✓ 完整</span> · Claude / Cursor / Cline / Hermes / Windsurf / Codex / OpenClaw 全做 MCP 自动注册，网页端 + 通用方案文档全配齐</li>
+      <li><strong>6 个 Skill 全部 MCP 化</strong><span class="tag">✓ 完整</span> · amazon-scraper、ai-serp、wipo 三个 API 类全做成 MCP server；amazon-niche、competitor-radar、listing-opt 三个方法论保留 Skill</li>
+      <li><strong>5 个引导触点全部上线</strong><span class="tag">✓ 完整</span> · 落地页 / 安装 Banner / 安装过程 / 完成页引导 / CLI 使用 10 次延迟引导，一次到位</li>
+      <li><strong>使用统计 + 埋点系统</strong><span class="tag">✓ 完整</span> · 安装漏斗、Agent 选择分布、MCP 调用量、留存率全埋点，配可视化看板</li>
+      <li><strong>中英双语落地页</strong><span class="tag">✓ 完整</span> · 中文 + 英文同时上线，覆盖国内外用户，SEO 双线作战</li>
+      <li><strong>跨平台真机自动化测试</strong><span class="tag">✓ 完整</span> · GitHub Actions 配置 Mac / Linux / Win11 三平台测试矩阵，每次发版自动跑</li>
+    </ul>
+  </div>
+
+  <!-- ============ Risks ============ -->
+  <div class="risk-section">
+    <h2>怎么做到两周完整交付</h2>
+    <p class="sub">关键武器：<strong>多 Agent 并行开发</strong>——让 AI 编程助手同时推进多个子任务</p>
+
+    <div class="risk-grid">
+      <div class="risk-card green">
+        <h3>🚀 多 Agent 并行加速</h3>
+        <p>同一天里启动多个 AI 编程会话并行干活：一个写 MCP server、一个写 install.sh、一个做落地页。<strong>等效于 3 倍人力</strong>，但只占一人的协调时间。</p>
+        <div class="solution">
+          <strong>实际效果</strong>
+          单线串行需要 25-30 天的工作量，并行后压到 10 天。我做总指挥 + 联调 + review，AI Agent 做执行。
+        </div>
+      </div>
+
+      <div class="risk-card">
+        <h3>⚠️ MCP server 学习曲线</h3>
+        <p>第一个 MCP server 会比预期多花 0.5 天踩坑（Schema 设计、stdio/SSE 选型）。但<strong>一旦第一个跑通，剩下两个可以复用模式</strong>，效率指数级上升。</p>
+        <div class="solution">
+          <strong>对策</strong>
+          Day 2 三个 MCP server 并行启动——第一个先跑通模式，另两个套用，整体时间缩短 50%。
+        </div>
+      </div>
+
+      <div class="risk-card">
+        <h3>⚠️ 跨平台真机覆盖</h3>
+        <p>Mac / Linux / Win11 三个平台必须真机测试，Win 的 PowerShell 行为差异可能引出意外 bug。</p>
+        <div class="solution">
+          <strong>对策</strong>
+          Day 9 专项联调日；GitHub Actions 配自动化测试矩阵，每次 push 三平台并行跑。Win11 用虚拟机或同事真机即可。
+        </div>
+      </div>
+
+      <div class="risk-card green">
+        <h3>✓ 后端注册接口已就绪</h3>
+        <p>Pangolinfo 现有注册接口可直接复用，<strong>无需后端配合开发新接口</strong>。脚本对接现有 API 即可完成终端内邮箱+验证码+密码注册流程。</p>
+        <div class="solution">
+          <strong>影响</strong>
+          这一环节零阻塞、零等待。Day 1 直接开始集成现有接口，不占用主路径任何时间。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-nav">
+    <a class="nav-btn" href="installer.html">
+      <div class="nav-btn-label">← 上一步</div>
+      <div class="nav-btn-title">安装过程演示</div>
+    </a>
+    <a class="nav-btn next" href="index.html">
+      <div class="nav-btn-label">完成 →</div>
+      <div class="nav-btn-title">返回首页</div>
+    </a>
+  </div>
+
+</div>
+
+</body>
+</html>
