@@ -357,7 +357,7 @@ def build_request_body(query, mode, screenshot, follow_ups, num, region=None):
 # API call with retry
 # ---------------------------------------------------------------------------
 def call_api(api_key, body, max_retries=3, timeout=120):
-    """Call the scrape API with retry and exponential backoff."""
+    """Call the Scraper API with retry and exponential backoff."""
     headers = {
         "Authorization": f"Bearer {api_key}",
         "User-Agent": "Pangolinfo-CLI/2.0",

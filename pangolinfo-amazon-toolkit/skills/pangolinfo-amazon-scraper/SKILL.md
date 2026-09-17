@@ -197,8 +197,8 @@ Site code auto-inferred from URL domain.
 
 | Operation | Credits |
 |---|---|
-| Amazon scrape (`json`) | 1 |
-| Amazon scrape (`rawHtml` / `markdown`) | 0.75 |
+| Amazon Scraper API (`json`) | 1 |
+| Amazon Scraper API (`rawHtml` / `markdown`) | 0.75 |
 | Follow Seller | 1 |
 | Variant ASIN | 1 |
 | Review page | 5 per page |

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Pangolinfo Amazon Scrape API Client
+Pangolinfo Amazon Scraper API Client
 
-Zero-dependency Python client for Pangolinfo's Amazon Scrape APIs.
+Zero-dependency Python client for Pangolinfo's Amazon Scraper APIs.
 Supports product detail lookup, keyword search, bestsellers, new releases,
 category browsing, seller products, variant options, and product reviews.
 
@@ -413,7 +413,7 @@ def build_variant_asin_body(asin, site, zipcode):
 
 
 def build_amazon_body(url, query, content, site, parser, zipcode, fmt, parser_was_defaulted):
-    """Build request body for Amazon Scrape API."""
+    """Build request body for Amazon Scraper API."""
     body = {
         "format": fmt,
         "parserName": parser,
@@ -578,7 +578,7 @@ def extract_amazon_output(result):
 # ---------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(
-        description="Pangolinfo Amazon Scrape API Client",
+        description="Pangolinfo Amazon Scraper API Client",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=(
             "Examples:\n"
